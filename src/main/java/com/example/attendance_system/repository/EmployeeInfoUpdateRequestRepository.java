@@ -1,0 +1,36 @@
+package com.example.attendance_system.repository;
+
+import com.example.attendance_system.entity.EmployeeInfoUpdateRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+/**
+ * 员工信息更新请求数据访问接口
+ */
+@Repository
+public interface EmployeeInfoUpdateRequestRepository extends JpaRepository<EmployeeInfoUpdateRequest, Long> {
+    
+    /**
+     * 根据员工编号查询员工信息更新请求
+     * @param employeeNo 员工编号
+     * @return 员工信息更新请求列表
+     */
+    List<EmployeeInfoUpdateRequest> findByEmployeeNoOrderByCreatedTimeDesc(String employeeNo);
+    
+    /**
+     * 根据员工编号和状态查询员工信息更新请求
+     * @param employeeNo 员工编号
+     * @param status 状态
+     * @return 员工信息更新请求列表
+     */
+    List<EmployeeInfoUpdateRequest> findByEmployeeNoAndStatusOrderByCreatedTimeDesc(String employeeNo, Integer status);
+    
+    /**
+     * 查询所有待审核的员工信息更新请求
+     * @param status 状态
+     * @return 员工信息更新请求列表
+     */
+    List<EmployeeInfoUpdateRequest> findByStatusOrderByCreatedTimeAsc(Integer status);
+} 

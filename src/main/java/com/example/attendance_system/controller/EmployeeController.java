@@ -1,6 +1,7 @@
 package com.example.attendance_system.controller;
 
 import com.example.attendance_system.dto.EmployeeRegistrationDTO;
+import com.example.attendance_system.dto.LoginDTO;
 import com.example.attendance_system.entity.Employee;
 import com.example.attendance_system.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,40 @@ public class EmployeeController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "员工注册失败：" + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    /**
+     * 员工登录接口
+     * @param loginDTO 登录信息
+     * @return 登录结果
+     */
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
+        try {
+            Employee employee = employeeService.login(loginDTO);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "登录成功");
+            response.put("employeeNo", employee.getEmployeeNo());
+            response.put("employeeId", employee.getId());
+            response.put("name", employee.getName());
+            response.put("isAdmin", employee.getIsAdmin());
+            
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "登录失败：" + e.getMessage());
             
             return ResponseEntity.internalServerError().body(response);
         }
