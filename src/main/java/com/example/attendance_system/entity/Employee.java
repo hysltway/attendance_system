@@ -32,7 +32,7 @@ public class Employee {
      * xxxx：随机生成的数字
      * 员工注册时自动生成，总长度为8位
      */
-    @Column(name = "employee_no", length = 8, unique = true, nullable = false)
+    @Column(name = "employee_no", length = 20, unique = true, nullable = false)
     private String employeeNo;
     
     /**
@@ -51,7 +51,7 @@ public class Employee {
      * 手机号
      */
     @Column(length = 20)
-    private String phone;
+    private String phoneNumber;
     
     /**
      * 邮箱
@@ -82,6 +82,18 @@ public class Employee {
      */
     @Column(nullable = false)
     private Integer status = 1;
+    
+    /**
+     * 是否为管理员：true-是，false-否
+     */
+    @Column(name = "is_admin", nullable = false)
+    private Boolean isAdmin = false;
+    
+    /**
+     * 密码
+     */
+    @Column(length = 100, nullable = false)
+    private String password;
     
     /**
      * 创建时间，自动填充
