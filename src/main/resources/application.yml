@@ -32,6 +32,12 @@ spring:
     serialization:
       # 序列化时忽略为null的属性
       fail-on-empty-beans: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 15MB
+      location: ${java.io.tmpdir}
 
 server:
   # 服务端口
@@ -47,20 +53,27 @@ server:
     # 连接超时时间（毫秒）
     connection-timeout: 50000
   address: 0.0.0.0
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain,text/css,application/javascript
 
 # 日志配置
 logging:
   level:
     # 项目包日志级别
-    com.example.demo: info
+    com.example.attendance_system: DEBUG
     # SQL日志级别
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   file:
     # 日志文件路径
     path: ./logs
     # 日志文件名
     name: attendance-system.log
+    # 日志文件最大大小（MB）
+    max-size: 10MB
+    # 日志文件最大历史（天）
+    max-history: 7
   pattern:
     # 控制台日志格式
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
@@ -75,6 +88,10 @@ app:
     work-hours: 8
     # 考勤异常检查的提前天数
     check-days-ahead: 7
+    # 人脸识别相关配置
+    face:
+      # 相似度阈值
+      similarity-threshold: 0.6
   # 文件上传配置
   upload:
     # 文件上传路径

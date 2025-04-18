@@ -168,12 +168,10 @@ public class FaceFeatureServiceImpl implements FaceFeatureService {
      */
     private FaceFeature saveFaceFeature(String employeeNo, String featureJson) {
         // 查询现有特征
-        Optional<FaceFeature> existingFeatureOpt = faceFeatureRepository.findByEmployeeNo(employeeNo);
+        FaceFeature faceFeature = faceFeatureRepository.findByEmployeeNo(employeeNo);
         
-        FaceFeature faceFeature;
-        if (existingFeatureOpt.isPresent()) {
+        if (faceFeature != null) {
             // 更新现有特征
-            faceFeature = existingFeatureOpt.get();
             faceFeature.setFeatureVector(featureJson);
             faceFeature.setExtractionTime(LocalDateTime.now());
             faceFeature.setStatus(1);
@@ -197,8 +195,7 @@ public class FaceFeatureServiceImpl implements FaceFeatureService {
      */
     @Override
     public FaceFeature getFaceFeature(String employeeNo) {
-        Optional<FaceFeature> faceFeatureOpt = faceFeatureRepository.findByEmployeeNo(employeeNo);
-        return faceFeatureOpt.orElse(null);
+        return faceFeatureRepository.findByEmployeeNo(employeeNo);
     }
 
     /**
