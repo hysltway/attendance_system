@@ -24,7 +24,7 @@ public class FaceRecognitionUtil {
     private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
     
     // 人脸识别Python模块路径
-    private static final String FACE_RECOGNITION_DIR = "Dlib_face_recognition_from_camera";
+    private static final String FACE_RECOGNITION_DIR = "face_recognition";
     
     /**
      * 将Base64编码的图像保存为临时文件
@@ -62,10 +62,17 @@ public class FaceRecognitionUtil {
     public String extractFaceFeature(String imagePath) throws Exception {
         log.info("Extracting face feature from image: {}", imagePath);
         
-        // 构建Python脚本执行命令
+        // 构建Python脚本执行命令 - 使用批处理文件
+        File batchFile = new File(System.getProperty("user.dir"), "run_face_extract.bat");
+        if (!batchFile.exists()) {
+            log.error("批处理文件不存在: {}", batchFile.getAbsolutePath());
+            throw new Exception("批处理文件不存在: " + batchFile.getAbsolutePath());
+        }
+        
+        log.info("使用批处理文件: {}", batchFile.getAbsolutePath());
+        
         ProcessBuilder pb = new ProcessBuilder(
-                "python",
-                FACE_RECOGNITION_DIR + "/extract_face_feature.py",
+                batchFile.getAbsolutePath(),
                 imagePath
         );
         
@@ -75,6 +82,8 @@ public class FaceRecognitionUtil {
         // 将标准错误重定向到标准输出
         pb.redirectErrorStream(true);
         
+        log.info("开始执行进程");
+        
         // 启动进程
         Process process = pb.start();
         
@@ -83,20 +92,35 @@ public class FaceRecognitionUtil {
         StringBuilder output = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
-            output.append(line);
+            output.append(line).append("\n");
+            log.info("进程输出: {}", line);
         }
         
         // 等待进程结束
         boolean exitOk = process.waitFor(30, TimeUnit.SECONDS);
         int exitCode = process.exitValue();
         
+        log.info("进程执行完成，exitOk: {}, exitCode: {}", exitOk, exitCode);
+        
         // 检查进程是否正常结束
         if (!exitOk || exitCode != 0) {
             log.error("Face feature extraction failed. Exit code: {}", exitCode);
+            
+            // 检查日志文件
+            File logFile = new File(System.getProperty("user.dir"), "face_extract_log.txt");
+            if (logFile.exists()) {
+                log.info("读取批处理日志文件: {}", logFile.getAbsolutePath());
+                String logContent = new String(Files.readAllBytes(logFile.toPath()));
+                log.info("批处理日志内容:\n{}", logContent);
+            } else {
+                log.warn("批处理日志文件不存在: {}", logFile.getAbsolutePath());
+            }
+            
             throw new Exception("人脸特征提取失败，请确保图像中包含清晰的人脸");
         }
         
         String result = output.toString().trim();
+        log.info("提取结果: {}", result);
         
         // 验证结果是否为有效的JSON
         try {
@@ -123,10 +147,17 @@ public class FaceRecognitionUtil {
     public Map<String, Object> recognizeFace(String imagePath) throws Exception {
         log.info("Recognizing face from image: {}", imagePath);
         
-        // 构建Python脚本执行命令
+        // 构建Python脚本执行命令 - 使用批处理文件
+        File batchFile = new File(System.getProperty("user.dir"), "run_face_recognize.bat");
+        if (!batchFile.exists()) {
+            log.error("批处理文件不存在: {}", batchFile.getAbsolutePath());
+            throw new Exception("批处理文件不存在: " + batchFile.getAbsolutePath());
+        }
+        
+        log.info("使用批处理文件: {}", batchFile.getAbsolutePath());
+        
         ProcessBuilder pb = new ProcessBuilder(
-                "python",
-                FACE_RECOGNITION_DIR + "/recognize_face.py",
+                batchFile.getAbsolutePath(),
                 imagePath
         );
         
@@ -136,6 +167,8 @@ public class FaceRecognitionUtil {
         // 将标准错误重定向到标准输出
         pb.redirectErrorStream(true);
         
+        log.info("开始执行进程");
+        
         // 启动进程
         Process process = pb.start();
         
@@ -144,20 +177,35 @@ public class FaceRecognitionUtil {
         StringBuilder output = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
-            output.append(line);
+            output.append(line).append("\n");
+            log.info("进程输出: {}", line);
         }
         
         // 等待进程结束
         boolean exitOk = process.waitFor(30, TimeUnit.SECONDS);
         int exitCode = process.exitValue();
         
+        log.info("进程执行完成，exitOk: {}, exitCode: {}", exitOk, exitCode);
+        
         // 检查进程是否正常结束
         if (!exitOk || exitCode != 0) {
             log.error("Face recognition failed. Exit code: {}", exitCode);
+            
+            // 检查日志文件
+            File logFile = new File(System.getProperty("user.dir"), "face_recognize_log.txt");
+            if (logFile.exists()) {
+                log.info("读取批处理日志文件: {}", logFile.getAbsolutePath());
+                String logContent = new String(Files.readAllBytes(logFile.toPath()));
+                log.info("批处理日志内容:\n{}", logContent);
+            } else {
+                log.warn("批处理日志文件不存在: {}", logFile.getAbsolutePath());
+            }
+            
             throw new Exception("人脸识别失败，请重试");
         }
         
         String result = output.toString().trim();
+        log.info("识别结果: {}", result);
         
         // 解析识别结果
         try {
