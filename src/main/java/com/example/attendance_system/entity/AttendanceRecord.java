@@ -77,6 +77,13 @@ public class AttendanceRecord {
     private Boolean submittedToAdmin = false;
     
     /**
+     * 是否已被管理员处理过：true-是，false-否
+     * 一旦被管理员处理过，不允许再次提交申诉
+     */
+    @Column(name = "processed_by_admin")
+    private Boolean processedByAdmin = false;
+    
+    /**
      * 创建时间，自动填充
      */
     @CreationTimestamp

@@ -166,15 +166,15 @@ public class EmployeeController {
     }
     
     /**
-     * 异常考勤记录申诉接口
-     * @param appealDTO 申诉信息
-     * @return 申诉结果
+     * 提交异常考勤申诉
+     * @param appealDTO 申诉信息，包含员工编号、异常记录ID和申诉理由
+     * @return 申诉结果，包含处理状态和说明信息
      */
-    @Operation(summary = "异常考勤记录申诉", description = "员工对异常考勤记录发起申诉")
+    @Operation(summary = "提交异常考勤申诉", description = "员工对异常考勤记录（迟到、早退、旷工等）提交申诉，说明情况并提交给管理员审核")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "申诉提交成功"),
-            @ApiResponse(responseCode = "400", description = "参数错误"),
-            @ApiResponse(responseCode = "500", description = "服务器内部错误")
+            @ApiResponse(responseCode = "200", description = "申诉提交成功，等待管理员审核"),
+            @ApiResponse(responseCode = "400", description = "请求参数错误，如员工编号不存在或申诉说明为空"),
+            @ApiResponse(responseCode = "500", description = "服务器内部错误，处理申诉请求时出现异常")
     })
     @PostMapping("/employee/exception/contact-administrator")
     public ResponseEntity<?> submitExceptionAppeal(@RequestBody AttendanceExceptionAppealDTO appealDTO) {
@@ -197,22 +197,22 @@ public class EmployeeController {
             response.put("success", result);
             
             if (result) {
-                response.put("message", "异常记录已成功提交管理员审核");
+                response.put("message", "您的异常考勤申诉已成功提交，管理员将尽快审核处理。请关注申诉结果，如有紧急情况可联系人事部门。");
             } else {
-                response.put("message", "申诉提交失败");
+                response.put("message", "申诉提交失败，请稍后重试或直接联系人事部门处理");
             }
             
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("message", e.getMessage());
+            response.put("message", "申诉提交失败：" + e.getMessage() + "，请检查您的输入后重试");
             
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("message", "提交异常考勤申诉失败：" + e.getMessage());
+            response.put("message", "系统处理您的申诉请求时遇到问题：" + e.getMessage() + "，请稍后重试或联系系统管理员");
             
             return ResponseEntity.internalServerError().body(response);
         }

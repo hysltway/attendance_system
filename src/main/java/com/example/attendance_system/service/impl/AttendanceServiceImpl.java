@@ -354,6 +354,11 @@ public class AttendanceServiceImpl implements AttendanceService {
             throw new IllegalArgumentException("无权操作此考勤记录");
         }
         
+        // 验证记录是否已被管理员处理过
+        if (record.getProcessedByAdmin()) {
+            throw new IllegalArgumentException("该考勤记录已被管理员处理，无法再次申诉，如有异议请直接联系人事部门");
+        }
+        
         // 验证记录状态是否为异常且未提交
         if (record.getStatus() == 1 || record.getSubmittedToAdmin()) {
             throw new IllegalArgumentException("该记录不是未处理的异常记录，无法申诉");
@@ -458,6 +463,9 @@ public class AttendanceServiceImpl implements AttendanceService {
         
         // 标记申诉已处理，将submittedToAdmin设为false，使其不再出现在待处理列表中
         record.setSubmittedToAdmin(false);
+        
+        // 标记该记录已被管理员处理过，防止再次提交申诉
+        record.setProcessedByAdmin(true);
         
         // 保存记录
         return attendanceRecordRepository.save(record);
