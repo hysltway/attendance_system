@@ -105,6 +105,24 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new IllegalArgumentException("您有待审核的信息更新请求，请等待审核完成后再提交");
         }
         
+        // 验证手机号唯一性（如果提供了新的手机号且与当前不同）
+        if (updateDTO.getPhoneNumber() != null 
+                && !updateDTO.getPhoneNumber().trim().isEmpty()
+                && !updateDTO.getPhoneNumber().equals(employee.getPhoneNumber())) {
+            if (employeeRepository.existsByPhoneNumber(updateDTO.getPhoneNumber())) {
+                throw new IllegalArgumentException("该手机号已被其他员工使用");
+            }
+        }
+        
+        // 验证邮箱唯一性（如果提供了新的邮箱且与当前不同）
+        if (updateDTO.getEmail() != null 
+                && !updateDTO.getEmail().trim().isEmpty()
+                && !updateDTO.getEmail().equals(employee.getEmail())) {
+            if (employeeRepository.existsByEmail(updateDTO.getEmail())) {
+                throw new IllegalArgumentException("该邮箱已被其他员工使用");
+            }
+        }
+        
         // 创建信息更新请求对象
         EmployeeInfoUpdateRequest request = new EmployeeInfoUpdateRequest();
         // 将DTO中的属性复制到请求对象中
@@ -141,7 +159,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new IllegalArgumentException("该请求已经被审核过了");
         }
         
-        // 更新请求状态为审核结果（1-通过，2-拒绝）在玩
+        // 更新请求状态为审核结果（1-通过，2-拒绝）
         request.setStatus(auditDTO.getStatus());
         // 设置管理员审核意见
         request.setAdminComment(auditDTO.getAdminComment());
@@ -156,29 +174,27 @@ public class EmployeeServiceImpl implements EmployeeService {
                 throw new IllegalArgumentException("员工不存在");
             }
             
-            // 更新员工信息，只更新请求中非空的字段
+            // 更新员工信息，只更新允许的字段（name, phoneNumber, email）
             if (request.getName() != null) {
                 employee.setName(request.getName());
             }
             
-            if (request.getGender() != null) {
-                employee.setGender(request.getGender());
-            }
-            
             if (request.getPhoneNumber() != null) {
+                // 再次验证手机号唯一性
+                if (!request.getPhoneNumber().equals(employee.getPhoneNumber()) && 
+                        employeeRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+                    throw new IllegalArgumentException("该手机号已被其他员工使用");
+                }
                 employee.setPhoneNumber(request.getPhoneNumber());
             }
             
             if (request.getEmail() != null) {
+                // 再次验证邮箱唯一性
+                if (!request.getEmail().equals(employee.getEmail()) && 
+                        employeeRepository.existsByEmail(request.getEmail())) {
+                    throw new IllegalArgumentException("该邮箱已被其他员工使用");
+                }
                 employee.setEmail(request.getEmail());
-            }
-            
-            if (request.getDepartmentId() != null) {
-                employee.setDepartmentId(request.getDepartmentId());
-            }
-            
-            if (request.getPosition() != null) {
-                employee.setPosition(request.getPosition());
             }
             
             // 保存更新后的员工信息
