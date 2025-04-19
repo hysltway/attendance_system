@@ -314,10 +314,22 @@ public class AttendanceServiceImpl implements AttendanceService {
             AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
                     .id(record.getId())
                     .date(record.getCheckTime().format(dateFormatter))
-                    .checkType(record.getStatus())
+                    .checkTime(record.getCheckTime())
+                    .checkType(record.getCheckType())
+                    .checkTypeText(getCheckTypeText(record.getCheckType()))
+                    .checkStatus(record.getStatus())
                     .checkTypeDesc(getCheckTypeDesc(record.getStatus()))
                     .reason(record.getReason())
                     .status(record.getSubmittedToAdmin() ? 1 : 0)
+                    .employeeNo(record.getEmployeeNo())
+                    .explanation(record.getExplanation())
+                    .remark(record.getRemark())
+                    .submittedToAdmin(record.getSubmittedToAdmin())
+                    .processedByAdmin(record.getProcessedByAdmin())
+                    .checkMethod(record.getCheckMethod())
+                    .checkMethodText(getCheckMethodText(record.getCheckMethod()))
+                    .createdTime(record.getCreatedTime())
+                    .updatedTime(record.getUpdatedTime())
                     .build();
             records.add(dto);
         }
@@ -394,6 +406,44 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
     }
     
+    /**
+     * 获取打卡类型描述
+     * @param checkType 打卡类型编号
+     * @return 打卡类型描述
+     */
+    private String getCheckTypeText(Integer checkType) {
+        switch (checkType) {
+            case 1:
+                return "上班打卡";
+            case 2:
+                return "下班打卡";
+            case 3:
+                return "外出打卡";
+            case 4:
+                return "返回打卡";
+            default:
+                return "未知";
+        }
+    }
+    
+    /**
+     * 获取打卡方式描述
+     * @param checkMethod 打卡方式编号
+     * @return 打卡方式描述
+     */
+    private String getCheckMethodText(Integer checkMethod) {
+        switch (checkMethod) {
+            case 1:
+                return "人脸识别";
+            case 2:
+                return "管理员录入";
+            case 3:
+                return "系统自动生成";
+            default:
+                return "未知";
+        }
+    }
+    
     @Override
     public AttendanceExceptionPageDTO getAllExceptionAppeals(Integer current, Integer size) {
         // 参数校验
@@ -418,14 +468,22 @@ public class AttendanceServiceImpl implements AttendanceService {
             AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
                     .id(record.getId())
                     .date(record.getCheckTime().format(dateFormatter))
-                    .checkType(record.getStatus())
+                    .checkTime(record.getCheckTime())
+                    .checkType(record.getCheckType())
+                    .checkTypeText(getCheckTypeText(record.getCheckType()))
+                    .checkStatus(record.getStatus())
                     .checkTypeDesc(getCheckTypeDesc(record.getStatus()))
                     .reason(record.getReason())
-                    // 添加申诉说明
-                    .explanation(record.getExplanation())
-                    // 添加员工编号
-                    .employeeNo(record.getEmployeeNo())
                     .status(record.getSubmittedToAdmin() ? 1 : 0)
+                    .employeeNo(record.getEmployeeNo())
+                    .explanation(record.getExplanation())
+                    .remark(record.getRemark())
+                    .submittedToAdmin(record.getSubmittedToAdmin())
+                    .processedByAdmin(record.getProcessedByAdmin())
+                    .checkMethod(record.getCheckMethod())
+                    .checkMethodText(getCheckMethodText(record.getCheckMethod()))
+                    .createdTime(record.getCreatedTime())
+                    .updatedTime(record.getUpdatedTime())
                     .build();
             records.add(dto);
         }
