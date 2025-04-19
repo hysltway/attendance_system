@@ -1,5 +1,6 @@
 package com.example.attendance_system.service.impl;
 
+import com.example.attendance_system.dto.AdminAttendanceExceptionUpdateDTO;
 import com.example.attendance_system.dto.AttendanceExceptionAppealDTO;
 import com.example.attendance_system.dto.AttendanceExceptionDTO;
 import com.example.attendance_system.dto.AttendanceExceptionPageDTO;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
@@ -385,5 +387,79 @@ public class AttendanceServiceImpl implements AttendanceService {
             default:
                 return "未知";
         }
+    }
+    
+    @Override
+    public AttendanceExceptionPageDTO getAllExceptionAppeals(Integer current, Integer size) {
+        // 参数校验
+        if (current == null || current < 1) {
+            current = 1;
+        }
+        if (size == null || size < 1) {
+            size = 10;
+        }
+        
+        // 创建分页参数，注意：JPA分页从0开始计数
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
+        // 查询所有已提交申诉的异常考勤记录
+        Page<AttendanceRecord> page = attendanceRecordRepository.findAllExceptionAppeals(pageable);
+        
+        // 转换为DTO对象
+        List<AttendanceExceptionDTO> records = new ArrayList<>();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        
+        for (AttendanceRecord record : page.getContent()) {
+            AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
+                    .id(record.getId())
+                    .date(record.getCheckTime().format(dateFormatter))
+                    .checkType(record.getStatus())
+                    .checkTypeDesc(getCheckTypeDesc(record.getStatus()))
+                    .reason(record.getReason())
+                    // 添加申诉说明
+                    .explanation(record.getExplanation())
+                    // 添加员工编号
+                    .employeeNo(record.getEmployeeNo())
+                    .status(record.getSubmittedToAdmin() ? 1 : 0)
+                    .build();
+            records.add(dto);
+        }
+        
+        // 构建分页结果
+        return AttendanceExceptionPageDTO.builder()
+                .current(current)
+                .size(size)
+                .total(page.getTotalElements())
+                .records(records)
+                .build();
+    }
+    
+    @Override
+    @Transactional
+    public AttendanceRecord updateExceptionRecord(AdminAttendanceExceptionUpdateDTO updateDTO) {
+        // 查找指定的异常考勤记录
+        AttendanceRecord record = attendanceRecordRepository.findById(updateDTO.getRecordId())
+                .orElseThrow(() -> new IllegalArgumentException("未找到指定的考勤记录"));
+        
+        // 验证记录是否为已提交申诉的异常记录
+        if (!record.getSubmittedToAdmin()) {
+            throw new IllegalArgumentException("该记录未提交申诉，无法处理");
+        }
+        
+        // 更新记录状态
+        if (updateDTO.getStatus() != null) {
+            record.setStatus(updateDTO.getStatus());
+        }
+        
+        // 更新备注
+        if (updateDTO.getRemark() != null) {
+            record.setRemark(updateDTO.getRemark());
+        }
+        
+        // 标记申诉已处理，将submittedToAdmin设为false，使其不再出现在待处理列表中
+        record.setSubmittedToAdmin(false);
+        
+        // 保存记录
+        return attendanceRecordRepository.save(record);
     }
 } 

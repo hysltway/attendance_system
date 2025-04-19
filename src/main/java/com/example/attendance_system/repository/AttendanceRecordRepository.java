@@ -68,4 +68,12 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
      * @return 考勤记录数量
      */
     long countByEmployeeNoAndCheckTimeBetween(String employeeNo, LocalDateTime startTime, LocalDateTime endTime);
+    
+    /**
+     * 查询所有已提交申诉但未处理的异常考勤记录（submittedToAdmin为true）
+     * @param pageable 分页参数
+     * @return 异常考勤记录分页结果
+     */
+    @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true ORDER BY a.checkTime DESC")
+    Page<AttendanceRecord> findAllExceptionAppeals(Pageable pageable);
 } 

@@ -42,4 +42,14 @@ public class AttendanceExceptionDTO {
      * 处理状态编号：0-未处理，1-已处理
      */
     private Integer status;
+    
+    /**
+     * 员工编号
+     */
+    private String employeeNo;
+    
+    /**
+     * 申诉说明
+     */
+    private String explanation;
 } 
