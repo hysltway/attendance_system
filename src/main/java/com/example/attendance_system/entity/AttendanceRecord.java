@@ -59,6 +59,24 @@ public class AttendanceRecord {
     private String remark;
     
     /**
+     * 异常描述（自动生成）
+     */
+    @Column(length = 200)
+    private String reason;
+    
+    /**
+     * 员工申诉说明
+     */
+    @Column(length = 500)
+    private String explanation;
+    
+    /**
+     * 是否提交管理员处理：true-是，false-否
+     */
+    @Column(name = "submitted_to_admin")
+    private Boolean submittedToAdmin = false;
+    
+    /**
      * 创建时间，自动填充
      */
     @CreationTimestamp

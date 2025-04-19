@@ -33,6 +33,7 @@ public class AttendanceController {
      * 接收前端上传的人脸图像，进行识别并记录打卡
      *
      * @param file 人脸图像文件
+     * @param checkMethod 打卡方式：1-人脸识别，2-管理员录入，3-系统自动生成，默认为1
      * @return 打卡结果
      */
     @Operation(summary = "人脸识别打卡", description = "上传人脸图像进行身份识别并记录打卡")
@@ -50,14 +51,18 @@ public class AttendanceController {
     @PostMapping("/face")
     public ResponseEntity<FaceRecognitionDTO> faceRecognition(
             @Parameter(description = "人脸图像文件，支持JPG、PNG格式", required = true)
-            @RequestParam("file") MultipartFile file) {
-        log.info("收到人脸识别打卡请求，文件大小: {} bytes", file.getSize());
+            @RequestParam("file") MultipartFile file,
+            
+            @Parameter(description = "打卡方式：1-人脸识别，2-管理员录入，3-系统自动生成，默认为1")
+            @RequestParam(value = "checkMethod", required = false, defaultValue = "1") Integer checkMethod) {
+        log.info("收到人脸识别打卡请求，文件大小: {} bytes, 打卡方式: {}", file.getSize(), checkMethod);
         
         try {
-            FaceRecognitionDTO result = attendanceService.clockInByFace(file);
+            FaceRecognitionDTO result = attendanceService.clockInByFace(file, checkMethod);
             
             if ("success".equals(result.getStatus())) {
-                log.info("人脸识别打卡成功，员工: {}, 姓名: {}", result.getEmployeeNo(), result.getName());
+                log.info("人脸识别打卡成功，员工: {}, 姓名: {}, 打卡方式: {}", 
+                        result.getEmployeeNo(), result.getName(), result.getCheckMethod());
                 return ResponseEntity.ok(result);
             } else {
                 log.warn("人脸识别打卡失败: {}", result.getMessage());
@@ -68,6 +73,7 @@ public class AttendanceController {
             FaceRecognitionDTO errorResult = FaceRecognitionDTO.builder()
                     .status("error")
                     .message("系统处理异常: " + e.getMessage())
+                    .checkMethod(checkMethod)
                     .build();
             return ResponseEntity.internalServerError().body(errorResult);
         }

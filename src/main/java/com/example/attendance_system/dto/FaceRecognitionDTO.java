@@ -41,6 +41,11 @@ public class FaceRecognitionDTO {
     private String message;
     
     /**
+     * 打卡方式：1-人脸识别，2-管理员录入，3-系统自动生成
+     */
+    private Integer checkMethod;
+    
+    /**
      * 人脸相似度（匹配得分）
      */
     private Double similarity;
