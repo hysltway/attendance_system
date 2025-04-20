@@ -152,9 +152,10 @@ public class EmployeeInfoController {
     
     /**
      * 查询所有待审核的员工信息更新请求（管理员接口）
+     * @param adminNo 当前管理员编号（用于过滤自己的申请）
      * @return 待审核请求列表
      */
-    @Operation(summary = "查询待审核请求", description = "管理员查询所有待审核的员工信息更新申请")
+    @Operation(summary = "查询待审核请求", description = "管理员查询所有待审核的员工信息更新申请，自动过滤管理员自己的申请")
     @SecurityRequirement(name = "bearer-jwt")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "查询成功", 
@@ -168,11 +169,23 @@ public class EmployeeInfoController {
                             schema = @Schema(implementation = Object.class)))
     })
     @GetMapping("/info/update/pending")
-    public ResponseEntity<?> getPendingInfoUpdateRequests() {
+    public ResponseEntity<?> getPendingInfoUpdateRequests(
+            @Parameter(description = "当前管理员编号", required = true)
+            @RequestParam String adminNo) {
         try {
-            List<EmployeeInfoUpdateRequest> requests = employeeService.getPendingInfoUpdateRequests();
+            if (adminNo == null || adminNo.isEmpty()) {
+                throw new IllegalArgumentException("管理员编号不能为空");
+            }
+            
+            List<EmployeeInfoUpdateRequest> requests = employeeService.getPendingInfoUpdateRequestsExcludeEmployee(adminNo);
             
             return ResponseEntity.ok(requests);
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            
+            return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
@@ -208,6 +221,20 @@ public class EmployeeInfoController {
             @Parameter(description = "审核信息，包含请求ID、审核结果和备注", required = true)
             @RequestBody EmployeeInfoUpdateAuditDTO auditDTO) {
         try {
+            // 参数校验
+            if (auditDTO.getRequestId() == null) {
+                throw new IllegalArgumentException("请求ID不能为空");
+            }
+            if (auditDTO.getStatus() == null) {
+                throw new IllegalArgumentException("审核状态不能为空");
+            }
+            if (auditDTO.getStatus() != 1 && auditDTO.getStatus() != 2) {
+                throw new IllegalArgumentException("审核状态不合法，只能是1（通过）或2（拒绝）");
+            }
+            if (auditDTO.getAdminNo() == null || auditDTO.getAdminNo().isEmpty()) {
+                throw new IllegalArgumentException("管理员编号不能为空");
+            }
+            
             EmployeeInfoUpdateRequest request = employeeService.auditInfoUpdateRequest(auditDTO);
             
             Map<String, Object> response = new HashMap<>();
@@ -216,7 +243,7 @@ public class EmployeeInfoController {
             response.put("requestId", request.getId());
             
             return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());

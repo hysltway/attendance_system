@@ -1,20 +1,15 @@
 package com.example.attendance_system.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 /**
- * 异常考勤信息分页查询结果DTO
+ * 请假记录分页数据传输对象
+ * 用于分页展示请假记录
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AttendanceExceptionPageDTO {
+public class LeaveRecordPageDTO {
     /**
      * 当前页码
      */
@@ -36,7 +31,7 @@ public class AttendanceExceptionPageDTO {
     private Integer pages;
     
     /**
-     * 异常考勤记录列表
+     * 请假记录列表
      */
-    private List<AttendanceExceptionDTO> records;
+    private List<LeaveRecordDTO> records;
 } 

@@ -8,25 +8,25 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 异常考勤信息DTO
+ * 考勤记录数据传输对象
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttendanceExceptionDTO {
+public class AttendanceRecordDTO {
     /**
      * 记录ID
      */
     private Long id;
     
     /**
-     * 打卡日期，格式为 yyyy-MM-dd
+     * 员工编号
      */
-    private String date;
+    private String employeeNo;
     
     /**
-     * 打卡时间，完整时间
+     * 打卡时间
      */
     private LocalDateTime checkTime;
     
@@ -38,57 +38,7 @@ public class AttendanceExceptionDTO {
     /**
      * 打卡类型描述
      */
-    private String checkTypeText;
-    
-    /**
-     * 异常类型编号：1-正常，2-迟到，3-早退，4-旷工，5-加班
-     */
-    private Integer checkStatus;
-    
-    /**
-     * 异常类型中文描述（如"迟到"、"早退"）
-     */
     private String checkTypeDesc;
-    
-    /**
-     * 异常原因
-     */
-    private String reason;
-    
-    /**
-     * 处理状态编号：0-未处理，1-已处理
-     */
-    private Integer status;
-    
-    /**
-     * 员工编号
-     */
-    private String employeeNo;
-    
-    /**
-     * 员工姓名
-     */
-    private String employeeName;
-    
-    /**
-     * 申诉说明
-     */
-    private String explanation;
-    
-    /**
-     * 管理员备注
-     */
-    private String remark;
-    
-    /**
-     * 是否已提交申诉
-     */
-    private Boolean submittedToAdmin;
-    
-    /**
-     * 是否已被处理
-     */
-    private Boolean processedByAdmin;
     
     /**
      * 打卡方式：1-人脸识别，2-管理员录入，3-系统自动生成
@@ -98,7 +48,42 @@ public class AttendanceExceptionDTO {
     /**
      * 打卡方式描述
      */
-    private String checkMethodText;
+    private String checkMethodDesc;
+    
+    /**
+     * 打卡状态：1-正常，2-迟到，3-早退，4-旷工，5-加班
+     */
+    private Integer status;
+    
+    /**
+     * 打卡状态描述
+     */
+    private String statusDesc;
+    
+    /**
+     * 备注
+     */
+    private String remark;
+    
+    /**
+     * 异常描述（自动生成）
+     */
+    private String reason;
+    
+    /**
+     * 员工申诉说明
+     */
+    private String explanation;
+    
+    /**
+     * 是否提交管理员处理：true-是，false-否
+     */
+    private Boolean submittedToAdmin;
+    
+    /**
+     * 是否已被管理员处理过：true-是，false-否
+     */
+    private Boolean processedByAdmin;
     
     /**
      * 创建时间

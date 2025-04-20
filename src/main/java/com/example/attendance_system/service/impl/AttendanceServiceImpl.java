@@ -4,6 +4,8 @@ import com.example.attendance_system.dto.AdminAttendanceExceptionUpdateDTO;
 import com.example.attendance_system.dto.AttendanceExceptionAppealDTO;
 import com.example.attendance_system.dto.AttendanceExceptionDTO;
 import com.example.attendance_system.dto.AttendanceExceptionPageDTO;
+import com.example.attendance_system.dto.AttendanceRecordDTO;
+import com.example.attendance_system.dto.AttendanceRecordPageDTO;
 import com.example.attendance_system.dto.FaceRecognitionDTO;
 import com.example.attendance_system.entity.AttendanceRecord;
 import com.example.attendance_system.entity.Employee;
@@ -311,6 +313,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
         for (AttendanceRecord record : page.getContent()) {
+            // 获取员工姓名
+            String employeeName = "";
+            Employee emp = employeeRepository.findByEmployeeNo(record.getEmployeeNo());
+            if (emp != null) {
+                employeeName = emp.getName();
+            }
+            
             AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
                     .id(record.getId())
                     .date(record.getCheckTime().format(dateFormatter))
@@ -322,6 +331,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                     .reason(record.getReason())
                     .status(record.getSubmittedToAdmin() ? 1 : 0)
                     .employeeNo(record.getEmployeeNo())
+                    .employeeName(employeeName)
                     .explanation(record.getExplanation())
                     .remark(record.getRemark())
                     .submittedToAdmin(record.getSubmittedToAdmin())
@@ -465,6 +475,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
         for (AttendanceRecord record : page.getContent()) {
+            // 获取员工姓名
+            String employeeName = "";
+            Employee emp = employeeRepository.findByEmployeeNo(record.getEmployeeNo());
+            if (emp != null) {
+                employeeName = emp.getName();
+            }
+            
             AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
                     .id(record.getId())
                     .date(record.getCheckTime().format(dateFormatter))
@@ -476,6 +493,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                     .reason(record.getReason())
                     .status(record.getSubmittedToAdmin() ? 1 : 0)
                     .employeeNo(record.getEmployeeNo())
+                    .employeeName(employeeName)
                     .explanation(record.getExplanation())
                     .remark(record.getRemark())
                     .submittedToAdmin(record.getSubmittedToAdmin())
@@ -527,5 +545,120 @@ public class AttendanceServiceImpl implements AttendanceService {
         
         // 保存记录
         return attendanceRecordRepository.save(record);
+    }
+    
+    @Override
+    public AttendanceRecordPageDTO getAttendanceRecords(String employeeNo, Integer current, Integer size) {
+        // 检查用户是否存在
+        Employee employee = employeeRepository.findByEmployeeNo(employeeNo);
+        if (employee == null) {
+            throw new IllegalArgumentException("员工不存在");
+        }
+        
+        // 创建分页参数，注意：JPA分页从0开始计数
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
+        // 查询所有考勤记录
+        Page<AttendanceRecord> page = attendanceRecordRepository.findByEmployeeNoOrderByCheckTimeDesc(employeeNo, pageable);
+        
+        // 转换为DTO对象
+        List<AttendanceRecordDTO> records = new ArrayList<>();
+        
+        for (AttendanceRecord record : page.getContent()) {
+            AttendanceRecordDTO dto = AttendanceRecordDTO.builder()
+                    .id(record.getId())
+                    .employeeNo(record.getEmployeeNo())
+                    .checkTime(record.getCheckTime())
+                    .checkType(record.getCheckType())
+                    .checkTypeDesc(getCheckTypeText(record.getCheckType()))
+                    .checkMethod(record.getCheckMethod())
+                    .checkMethodDesc(getCheckMethodText(record.getCheckMethod()))
+                    .status(record.getStatus())
+                    .statusDesc(getCheckTypeDesc(record.getStatus()))
+                    .remark(record.getRemark())
+                    .reason(record.getReason())
+                    .explanation(record.getExplanation())
+                    .submittedToAdmin(record.getSubmittedToAdmin())
+                    .processedByAdmin(record.getProcessedByAdmin())
+                    .createdTime(record.getCreatedTime())
+                    .updatedTime(record.getUpdatedTime())
+                    .build();
+            records.add(dto);
+        }
+        
+        // 构建分页结果
+        return AttendanceRecordPageDTO.builder()
+                .current(current)
+                .size(size)
+                .total(page.getTotalElements())
+                .pages(page.getTotalPages())
+                .records(records)
+                .build();
+    }
+
+    @Override
+    public AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo) {
+        // 参数校验
+        if (current == null || current < 1) {
+            current = 1;
+        }
+        if (size == null || size < 1) {
+            size = 10;
+        }
+        if (excludeEmployeeNo == null || excludeEmployeeNo.isEmpty()) {
+            throw new IllegalArgumentException("排除的员工编号不能为空");
+        }
+        
+        // 创建分页参数，注意：JPA分页从0开始计数
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
+        // 查询所有已提交申诉的异常考勤记录，排除指定员工
+        Page<AttendanceRecord> page = attendanceRecordRepository.findAllExceptionAppealsExcludeEmployee(excludeEmployeeNo, pageable);
+        
+        // 转换为DTO对象
+        List<AttendanceExceptionDTO> records = new ArrayList<>();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        
+        for (AttendanceRecord record : page.getContent()) {
+            // 获取员工姓名
+            String employeeName = "";
+            Employee emp = employeeRepository.findByEmployeeNo(record.getEmployeeNo());
+            if (emp != null) {
+                employeeName = emp.getName();
+            }
+            
+            AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
+                    .id(record.getId())
+                    .date(record.getCheckTime().format(dateFormatter))
+                    .checkTime(record.getCheckTime())
+                    .checkType(record.getCheckType())
+                    .checkTypeText(getCheckTypeText(record.getCheckType()))
+                    .checkStatus(record.getStatus())
+                    .checkTypeDesc(getCheckTypeDesc(record.getStatus()))
+                    .reason(record.getReason())
+                    .status(record.getSubmittedToAdmin() ? 1 : 0)
+                    .employeeNo(record.getEmployeeNo())
+                    .employeeName(employeeName)
+                    .explanation(record.getExplanation())
+                    .remark(record.getRemark())
+                    .submittedToAdmin(record.getSubmittedToAdmin())
+                    .processedByAdmin(record.getProcessedByAdmin())
+                    .checkMethod(record.getCheckMethod())
+                    .checkMethodText(getCheckMethodText(record.getCheckMethod()))
+                    .createdTime(record.getCreatedTime())
+                    .updatedTime(record.getUpdatedTime())
+                    .build();
+            records.add(dto);
+        }
+        
+        // 构建结果对象
+        AttendanceExceptionPageDTO result = new AttendanceExceptionPageDTO();
+        result.setCurrent(current);
+        result.setSize(size);
+        result.setTotal(page.getTotalElements());
+        result.setPages(page.getTotalPages());
+        result.setRecords(records);
+        
+        return result;
     }
 } 

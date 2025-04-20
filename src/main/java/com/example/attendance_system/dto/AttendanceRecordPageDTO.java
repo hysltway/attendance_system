@@ -8,13 +8,13 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * 异常考勤信息分页查询结果DTO
+ * 考勤记录分页数据传输对象
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttendanceExceptionPageDTO {
+public class AttendanceRecordPageDTO {
     /**
      * 当前页码
      */
@@ -36,7 +36,7 @@ public class AttendanceExceptionPageDTO {
     private Integer pages;
     
     /**
-     * 异常考勤记录列表
+     * 考勤记录列表
      */
-    private List<AttendanceExceptionDTO> records;
+    private List<AttendanceRecordDTO> records;
 } 

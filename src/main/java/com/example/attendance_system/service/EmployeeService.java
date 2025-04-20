@@ -55,6 +55,13 @@ public interface EmployeeService {
     List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequests();
     
     /**
+     * 查询所有待审核的员工信息更新请求，排除指定员工
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @return 请求列表
+     */
+    List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo);
+    
+    /**
      * 审核员工信息更新请求
      * @param auditDTO 审核信息
      * @return 更新后的请求

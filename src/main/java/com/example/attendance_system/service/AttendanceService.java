@@ -3,6 +3,7 @@ package com.example.attendance_system.service;
 import com.example.attendance_system.dto.AdminAttendanceExceptionUpdateDTO;
 import com.example.attendance_system.dto.AttendanceExceptionAppealDTO;
 import com.example.attendance_system.dto.AttendanceExceptionPageDTO;
+import com.example.attendance_system.dto.AttendanceRecordPageDTO;
 import com.example.attendance_system.dto.FaceRecognitionDTO;
 import com.example.attendance_system.entity.AttendanceRecord;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,15 @@ public interface AttendanceService {
      * @throws Exception 打卡异常
      */
     FaceRecognitionDTO clockInByFace(MultipartFile file, Integer checkMethod) throws Exception;
+    
+    /**
+     * 分页查询员工的所有考勤记录
+     * @param employeeNo 员工编号
+     * @param current 当前页码（从1开始）
+     * @param size 每页记录数
+     * @return 分页查询结果
+     */
+    AttendanceRecordPageDTO getAttendanceRecords(String employeeNo, Integer current, Integer size);
     
     /**
      * 分页查询员工的异常考勤记录
@@ -44,6 +54,15 @@ public interface AttendanceService {
      * @return 分页查询结果
      */
     AttendanceExceptionPageDTO getAllExceptionAppeals(Integer current, Integer size);
+    
+    /**
+     * 管理员获取所有提交了申诉的异常考勤记录，排除指定员工
+     * @param current 当前页码（从1开始）
+     * @param size 每页记录数
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @return 分页查询结果
+     */
+    AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo);
     
     /**
      * 管理员更新异常考勤记录
