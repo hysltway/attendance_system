@@ -2,6 +2,7 @@ package com.example.attendance_system.service.impl;
 
 import com.example.attendance_system.dto.EmployeeInfoUpdateAuditDTO;
 import com.example.attendance_system.dto.EmployeeInfoUpdateDTO;
+import com.example.attendance_system.dto.EmployeeInfoUpdatePageDTO;
 import com.example.attendance_system.dto.EmployeeRegistrationDTO;
 import com.example.attendance_system.dto.LoginDTO;
 import com.example.attendance_system.entity.Employee;
@@ -11,6 +12,9 @@ import com.example.attendance_system.repository.EmployeeRepository;
 import com.example.attendance_system.service.EmployeeService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -148,22 +152,45 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
     
     @Override
-    public List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo, String employeeNo, String name) {
+    public EmployeeInfoUpdatePageDTO getPendingInfoUpdateRequestsExcludeEmployeePage(String excludeEmployeeNo, String employeeNo, String name, Integer current, Integer size) {
         if (excludeEmployeeNo == null || excludeEmployeeNo.trim().isEmpty()) {
             throw new IllegalArgumentException("排除的员工编号不能为空");
         }
         
+        // 参数校验
+        if (current == null || current < 1) {
+            current = 1;
+        }
+        if (size == null || size < 1) {
+            size = 10;
+        }
+        
+        // 创建分页参数，注意：JPA分页从0开始计数
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
         // 根据条件查询
+        Page<EmployeeInfoUpdateRequest> page;
+        
         if (employeeNo != null && !employeeNo.trim().isEmpty()) {
             // 如果指定了员工编号，按员工编号查询
-            return employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoAndEmployeeNoNotOrderByCreatedTimeAsc(0, employeeNo, excludeEmployeeNo);
+            page = employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoAndEmployeeNoNotOrderByCreatedTimeAsc(0, employeeNo, excludeEmployeeNo, pageable);
         } else if (name != null && !name.trim().isEmpty()) {
             // 如果指定了员工姓名，按员工姓名查询
-            return employeeInfoUpdateRequestRepository.findByStatusAndNameContainingAndEmployeeNoNotOrderByCreatedTimeAsc(0, name, excludeEmployeeNo);
+            page = employeeInfoUpdateRequestRepository.findByStatusAndNameContainingAndEmployeeNoNotOrderByCreatedTimeAsc(0, name, excludeEmployeeNo, pageable);
         } else {
-            // 查询所有待审核(0)的信息更新请求，排除指定员工，按创建时间升序排列（先提交先审核）
-            return employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoNotOrderByCreatedTimeAsc(0, excludeEmployeeNo);
+            // 查询所有待审核(0)的信息更新请求，排除指定员工，按创建时间升序排列
+            page = employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoNotOrderByCreatedTimeAsc(0, excludeEmployeeNo, pageable);
         }
+        
+        // 构建分页结果
+        EmployeeInfoUpdatePageDTO result = new EmployeeInfoUpdatePageDTO();
+        result.setCurrent(current);
+        result.setSize(size);
+        result.setTotal(page.getTotalElements());
+        result.setPages(page.getTotalPages());
+        result.setRecords(page.getContent());
+        
+        return result;
     }
     
     @Override
@@ -230,6 +257,26 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 保存更新后的请求信息并返回
         return employeeInfoUpdateRequestRepository.save(request);
     }
+    
+    @Override
+    public List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo, String employeeNo, String name) {
+        if (excludeEmployeeNo == null || excludeEmployeeNo.trim().isEmpty()) {
+            throw new IllegalArgumentException("排除的员工编号不能为空");
+        }
+        
+        // 根据条件查询
+        if (employeeNo != null && !employeeNo.trim().isEmpty()) {
+            // 如果指定了员工编号，按员工编号查询
+            return employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoAndEmployeeNoNotOrderByCreatedTimeAsc(0, employeeNo, excludeEmployeeNo);
+        } else if (name != null && !name.trim().isEmpty()) {
+            // 如果指定了员工姓名，按员工姓名查询
+            return employeeInfoUpdateRequestRepository.findByStatusAndNameContainingAndEmployeeNoNotOrderByCreatedTimeAsc(0, name, excludeEmployeeNo);
+        } else {
+            // 查询所有待审核(0)的信息更新请求，排除指定员工，按创建时间升序排列（先提交先审核）
+            return employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoNotOrderByCreatedTimeAsc(0, excludeEmployeeNo);
+        }
+    }
+    
     private void validateEmployeeData(EmployeeRegistrationDTO registrationDTO) {
         if (registrationDTO.getName() == null || registrationDTO.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("员工姓名不能为空");
