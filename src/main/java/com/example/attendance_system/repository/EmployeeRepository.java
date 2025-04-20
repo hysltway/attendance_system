@@ -4,6 +4,8 @@ import com.example.attendance_system.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * 员工数据访问接口
  * Repository  表示该类专注于和数据库交互，
@@ -35,4 +37,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @return 是否存在
      */
     boolean existsByEmail(String email);
+    
+    /**
+     * 根据员工状态查询员工列表
+     * @param status 员工状态：1-在职，0-离职
+     * @return 员工列表
+     */
+    List<Employee> findByStatus(Integer status);
 } 
