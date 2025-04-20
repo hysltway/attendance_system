@@ -4,6 +4,8 @@ import com.example.attendance_system.dto.AdminAttendanceExceptionUpdateDTO;
 import com.example.attendance_system.dto.AttendanceExceptionAppealDTO;
 import com.example.attendance_system.dto.AttendanceExceptionDTO;
 import com.example.attendance_system.dto.AttendanceExceptionPageDTO;
+import com.example.attendance_system.dto.AttendanceRecordDTO;
+import com.example.attendance_system.dto.AttendanceRecordPageDTO;
 import com.example.attendance_system.dto.FaceRecognitionDTO;
 import com.example.attendance_system.entity.AttendanceRecord;
 import com.example.attendance_system.entity.Employee;
@@ -527,5 +529,54 @@ public class AttendanceServiceImpl implements AttendanceService {
         
         // 保存记录
         return attendanceRecordRepository.save(record);
+    }
+    
+    @Override
+    public AttendanceRecordPageDTO getAttendanceRecords(String employeeNo, Integer current, Integer size) {
+        // 检查用户是否存在
+        Employee employee = employeeRepository.findByEmployeeNo(employeeNo);
+        if (employee == null) {
+            throw new IllegalArgumentException("员工不存在");
+        }
+        
+        // 创建分页参数，注意：JPA分页从0开始计数
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
+        // 查询所有考勤记录
+        Page<AttendanceRecord> page = attendanceRecordRepository.findByEmployeeNoOrderByCheckTimeDesc(employeeNo, pageable);
+        
+        // 转换为DTO对象
+        List<AttendanceRecordDTO> records = new ArrayList<>();
+        
+        for (AttendanceRecord record : page.getContent()) {
+            AttendanceRecordDTO dto = AttendanceRecordDTO.builder()
+                    .id(record.getId())
+                    .employeeNo(record.getEmployeeNo())
+                    .checkTime(record.getCheckTime())
+                    .checkType(record.getCheckType())
+                    .checkTypeDesc(getCheckTypeText(record.getCheckType()))
+                    .checkMethod(record.getCheckMethod())
+                    .checkMethodDesc(getCheckMethodText(record.getCheckMethod()))
+                    .status(record.getStatus())
+                    .statusDesc(getCheckTypeDesc(record.getStatus()))
+                    .remark(record.getRemark())
+                    .reason(record.getReason())
+                    .explanation(record.getExplanation())
+                    .submittedToAdmin(record.getSubmittedToAdmin())
+                    .processedByAdmin(record.getProcessedByAdmin())
+                    .createdTime(record.getCreatedTime())
+                    .updatedTime(record.getUpdatedTime())
+                    .build();
+            records.add(dto);
+        }
+        
+        // 构建分页结果
+        return AttendanceRecordPageDTO.builder()
+                .current(current)
+                .size(size)
+                .total(page.getTotalElements())
+                .pages(page.getTotalPages())
+                .records(records)
+                .build();
     }
 } 

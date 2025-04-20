@@ -23,6 +23,14 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
      * @return 考勤记录列表
      */
     List<AttendanceRecord> findByEmployeeNo(String employeeNo);
+    
+    /**
+     * 根据员工编号分页查询所有考勤记录
+     * @param employeeNo 员工编号
+     * @param pageable 分页参数
+     * @return 考勤记录分页结果
+     */
+    Page<AttendanceRecord> findByEmployeeNoOrderByCheckTimeDesc(String employeeNo, Pageable pageable);
 
     /**
      * 根据员工编号和时间范围查询考勤记录

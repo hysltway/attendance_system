@@ -2,6 +2,7 @@ package com.example.attendance_system.controller;
 
 import com.example.attendance_system.dto.AttendanceExceptionAppealDTO;
 import com.example.attendance_system.dto.AttendanceExceptionPageDTO;
+import com.example.attendance_system.dto.AttendanceRecordPageDTO;
 import com.example.attendance_system.dto.EmployeeRegistrationDTO;
 import com.example.attendance_system.dto.LoginDTO;
 import com.example.attendance_system.entity.Employee;
@@ -292,6 +293,56 @@ public class EmployeeController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "人脸录入处理时遇到问题：" + e.getMessage() + "，请检查人脸图像是否清晰或重新尝试");
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 查询员工考勤数据接口
+     * @param employeeNo 员工编号
+     * @param current 当前页码
+     * @param size 每页记录数
+     * @return 考勤数据分页结果
+     */
+    @Operation(summary = "查询员工考勤数据", description = "分页查询员工的所有考勤记录，包括正常和异常记录")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "查询成功"),
+            @ApiResponse(responseCode = "400", description = "参数错误"),
+            @ApiResponse(responseCode = "500", description = "服务器内部错误")
+    })
+    @GetMapping("/employee/record")
+    public ResponseEntity<?> getAttendanceRecords(
+            @Parameter(description = "员工编号", required = true)
+            @RequestParam String employeeNo,
+            
+            @Parameter(description = "当前页码（从1开始）", required = true)
+            @RequestParam(defaultValue = "1") Integer current,
+            
+            @Parameter(description = "每页记录数", required = true)
+            @RequestParam(defaultValue = "10") Integer size) {
+        try {
+            // 参数校验
+            if (current < 1) {
+                throw new IllegalArgumentException("当前页码必须大于等于1");
+            }
+            if (size < 1 || size > 100) {
+                throw new IllegalArgumentException("每页记录数必须在1-100之间");
+            }
+            
+            // 调用服务查询所有考勤记录
+            AttendanceRecordPageDTO result = attendanceService.getAttendanceRecords(employeeNo, current, size);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "查询考勤记录失败：" + e.getMessage());
             
             return ResponseEntity.internalServerError().body(response);
         }
