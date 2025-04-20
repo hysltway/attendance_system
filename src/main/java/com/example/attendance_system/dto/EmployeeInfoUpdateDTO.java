@@ -18,11 +18,6 @@ public class EmployeeInfoUpdateDTO {
     private String name;
     
     /**
-     * 性别：0-女，1-男
-     */
-    private Integer gender;
-    
-    /**
      * 手机号
      */
     private String phoneNumber;
@@ -31,14 +26,4 @@ public class EmployeeInfoUpdateDTO {
      * 邮箱
      */
     private String email;
-    
-    /**
-     * 所属部门ID
-     */
-    private Long departmentId;
-    
-    /**
-     * 职位
-     */
-    private String position;
 } 

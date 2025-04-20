@@ -35,12 +35,6 @@ public class EmployeeInfoUpdateRequest {
     private String name;
     
     /**
-     * 性别：0-女，1-男
-     */
-    @Column
-    private Integer gender;
-    
-    /**
      * 手机号
      */
     @Column(length = 20)
@@ -51,18 +45,6 @@ public class EmployeeInfoUpdateRequest {
      */
     @Column(length = 100)
     private String email;
-    
-    /**
-     * 所属部门ID
-     */
-    @Column(name = "department_id")
-    private Long departmentId;
-    
-    /**
-     * 职位
-     */
-    @Column(length = 50)
-    private String position;
     
     /**
      * 审核状态：0-待审核，1-已通过，2-已拒绝

@@ -79,7 +79,7 @@ public class EmployeeInfoController {
      * @param updateDTO 更新信息
      * @return 更新结果
      */
-    @Operation(summary = "提交信息更新请求", description = "员工提交个人信息更新申请，等待管理员审核")
+    @Operation(summary = "提交信息更新请求", description = "员工提交个人信息更新申请，仅能修改姓名(name)、手机号(phoneNumber)和邮箱(email)，等待管理员审核")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "申请提交成功", 
                     content = @Content(mediaType = "application/json", 
@@ -93,7 +93,7 @@ public class EmployeeInfoController {
     })
     @PostMapping("/info/update")
     public ResponseEntity<?> submitInfoUpdateRequest(
-            @Parameter(description = "员工信息更新内容", required = true)
+            @Parameter(description = "员工信息更新内容，仅支持修改姓名、手机号和邮箱", required = true)
             @RequestBody EmployeeInfoUpdateDTO updateDTO) {
         try {
             EmployeeInfoUpdateRequest request = employeeService.submitInfoUpdateRequest(updateDTO);
