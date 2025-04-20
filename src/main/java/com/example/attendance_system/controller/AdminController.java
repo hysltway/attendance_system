@@ -230,7 +230,7 @@ public class AdminController {
             
             // 获取请假记录 - 排除当前管理员自己的申请
             Page<LeaveRecord> leavePage;
-            if (status != null && employeeNo != null) {
+            if (status != null && employeeNo != null && !employeeNo.trim().isEmpty()) {
                 // 确保不是查询管理员自己的记录
                 if (employeeNo.equals(adminNo)) {
                     Map<String, Object> response = new HashMap<>();
@@ -241,7 +241,7 @@ public class AdminController {
                 leavePage = leaveService.getLeaveRecordsByEmployeeNoAndStatus(employeeNo, status, pageable);
             } else if (status != null) {
                 leavePage = leaveService.getLeaveRecordsByStatusExcludeEmployee(status, adminNo, pageable);
-            } else if (employeeNo != null) {
+            } else if (employeeNo != null && !employeeNo.trim().isEmpty()) {
                 // 确保不是查询管理员自己的记录
                 if (employeeNo.equals(adminNo)) {
                     Map<String, Object> response = new HashMap<>();
