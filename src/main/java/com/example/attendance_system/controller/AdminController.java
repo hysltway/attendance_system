@@ -6,8 +6,10 @@ import com.example.attendance_system.dto.LeaveRecordApprovalDTO;
 import com.example.attendance_system.dto.LeaveRecordDTO;
 import com.example.attendance_system.dto.LeaveRecordPageDTO;
 import com.example.attendance_system.entity.AttendanceRecord;
+import com.example.attendance_system.entity.Employee;
 import com.example.attendance_system.entity.LeaveRecord;
 import com.example.attendance_system.service.AttendanceService;
+import com.example.attendance_system.service.EmployeeService;
 import com.example.attendance_system.service.LeaveService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -44,6 +46,9 @@ public class AdminController {
     
     @Autowired
     private LeaveService leaveService;
+    
+    @Autowired
+    private EmployeeService employeeService;
 
     /**
      * 获取所有待处理的异常申诉记录
@@ -352,6 +357,13 @@ public class AdminController {
         LeaveRecordDTO dto = new LeaveRecordDTO();
         dto.setId(record.getId());
         dto.setEmployeeNo(record.getEmployeeNo());
+        
+        // 获取员工姓名
+        Employee employee = employeeService.getEmployeeInfo(record.getEmployeeNo());
+        if (employee != null) {
+            dto.setEmployeeName(employee.getName());
+        }
+        
         dto.setLeaveType(record.getLeaveType());
         dto.setLeaveTypeDesc(getLeaveTypeDesc(record.getLeaveType()));
         dto.setStartDate(record.getStartDate());

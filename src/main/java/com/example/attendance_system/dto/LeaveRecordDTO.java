@@ -22,6 +22,11 @@ public class LeaveRecordDTO {
     private String employeeNo;
     
     /**
+     * 员工姓名
+     */
+    private String employeeName;
+    
+    /**
      * 请假类型：1-事假，2-病假，3-年假，4-婚假，5-产假，6-丧假，7-其他
      */
     private Integer leaveType;

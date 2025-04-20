@@ -313,6 +313,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
         for (AttendanceRecord record : page.getContent()) {
+            // 获取员工姓名
+            String employeeName = "";
+            Employee emp = employeeRepository.findByEmployeeNo(record.getEmployeeNo());
+            if (emp != null) {
+                employeeName = emp.getName();
+            }
+            
             AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
                     .id(record.getId())
                     .date(record.getCheckTime().format(dateFormatter))
@@ -324,6 +331,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                     .reason(record.getReason())
                     .status(record.getSubmittedToAdmin() ? 1 : 0)
                     .employeeNo(record.getEmployeeNo())
+                    .employeeName(employeeName)
                     .explanation(record.getExplanation())
                     .remark(record.getRemark())
                     .submittedToAdmin(record.getSubmittedToAdmin())
@@ -467,6 +475,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
         for (AttendanceRecord record : page.getContent()) {
+            // 获取员工姓名
+            String employeeName = "";
+            Employee emp = employeeRepository.findByEmployeeNo(record.getEmployeeNo());
+            if (emp != null) {
+                employeeName = emp.getName();
+            }
+            
             AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
                     .id(record.getId())
                     .date(record.getCheckTime().format(dateFormatter))
@@ -478,6 +493,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                     .reason(record.getReason())
                     .status(record.getSubmittedToAdmin() ? 1 : 0)
                     .employeeNo(record.getEmployeeNo())
+                    .employeeName(employeeName)
                     .explanation(record.getExplanation())
                     .remark(record.getRemark())
                     .submittedToAdmin(record.getSubmittedToAdmin())
@@ -604,7 +620,13 @@ public class AttendanceServiceImpl implements AttendanceService {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
         for (AttendanceRecord record : page.getContent()) {
-            // 同现有实现转换DTO
+            // 获取员工姓名
+            String employeeName = "";
+            Employee emp = employeeRepository.findByEmployeeNo(record.getEmployeeNo());
+            if (emp != null) {
+                employeeName = emp.getName();
+            }
+            
             AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
                     .id(record.getId())
                     .date(record.getCheckTime().format(dateFormatter))
@@ -614,13 +636,17 @@ public class AttendanceServiceImpl implements AttendanceService {
                     .checkStatus(record.getStatus())
                     .checkTypeDesc(getCheckTypeDesc(record.getStatus()))
                     .reason(record.getReason())
+                    .status(record.getSubmittedToAdmin() ? 1 : 0)
                     .employeeNo(record.getEmployeeNo())
+                    .employeeName(employeeName)
                     .explanation(record.getExplanation())
                     .remark(record.getRemark())
                     .submittedToAdmin(record.getSubmittedToAdmin())
                     .processedByAdmin(record.getProcessedByAdmin())
                     .checkMethod(record.getCheckMethod())
                     .checkMethodText(getCheckMethodText(record.getCheckMethod()))
+                    .createdTime(record.getCreatedTime())
+                    .updatedTime(record.getUpdatedTime())
                     .build();
             records.add(dto);
         }

@@ -66,6 +66,11 @@ public class AttendanceExceptionDTO {
     private String employeeNo;
     
     /**
+     * 员工姓名
+     */
+    private String employeeName;
+    
+    /**
      * 申诉说明
      */
     private String explanation;
