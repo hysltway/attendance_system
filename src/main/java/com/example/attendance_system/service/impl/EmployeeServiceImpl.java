@@ -148,13 +148,22 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
     
     @Override
-    public List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo) {
+    public List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo, String employeeNo, String name) {
         if (excludeEmployeeNo == null || excludeEmployeeNo.trim().isEmpty()) {
             throw new IllegalArgumentException("排除的员工编号不能为空");
         }
         
-        // 查询所有待审核(0)的信息更新请求，排除指定员工，按创建时间升序排列（先提交先审核）
-        return employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoNotOrderByCreatedTimeAsc(0, excludeEmployeeNo);
+        // 根据条件查询
+        if (employeeNo != null && !employeeNo.trim().isEmpty()) {
+            // 如果指定了员工编号，按员工编号查询
+            return employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoAndEmployeeNoNotOrderByCreatedTimeAsc(0, employeeNo, excludeEmployeeNo);
+        } else if (name != null && !name.trim().isEmpty()) {
+            // 如果指定了员工姓名，按员工姓名查询
+            return employeeInfoUpdateRequestRepository.findByStatusAndNameContainingAndEmployeeNoNotOrderByCreatedTimeAsc(0, name, excludeEmployeeNo);
+        } else {
+            // 查询所有待审核(0)的信息更新请求，排除指定员工，按创建时间升序排列（先提交先审核）
+            return employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoNotOrderByCreatedTimeAsc(0, excludeEmployeeNo);
+        }
     }
     
     @Override

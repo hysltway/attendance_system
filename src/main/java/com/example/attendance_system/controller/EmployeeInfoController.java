@@ -171,13 +171,19 @@ public class EmployeeInfoController {
     @GetMapping("/info/update/pending")
     public ResponseEntity<?> getPendingInfoUpdateRequests(
             @Parameter(description = "当前管理员编号", required = true)
-            @RequestParam String adminNo) {
+            @RequestParam String adminNo,
+            
+            @Parameter(description = "员工编号筛选（可选）")
+            @RequestParam(required = false) String employeeNo,
+            
+            @Parameter(description = "员工姓名筛选（可选）")
+            @RequestParam(required = false) String name) {
         try {
             if (adminNo == null || adminNo.isEmpty()) {
                 throw new IllegalArgumentException("管理员编号不能为空");
             }
             
-            List<EmployeeInfoUpdateRequest> requests = employeeService.getPendingInfoUpdateRequestsExcludeEmployee(adminNo);
+            List<EmployeeInfoUpdateRequest> requests = employeeService.getPendingInfoUpdateRequestsExcludeEmployee(adminNo, employeeNo, name);
             
             return ResponseEntity.ok(requests);
         } catch (IllegalArgumentException e) {

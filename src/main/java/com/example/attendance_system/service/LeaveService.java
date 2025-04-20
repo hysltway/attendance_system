@@ -131,4 +131,23 @@ public interface LeaveService {
      * @return 请假员工编号列表
      */
     List<String> getEmployeesOnLeave(LocalDate date);
+    
+    /**
+     * 根据员工姓名模糊查询请假记录（分页），排除指定员工
+     * @param employeeName 员工姓名（部分）
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getLeaveRecordsByEmployeeNameExcludeEmployee(String employeeName, String excludeEmployeeNo, Pageable pageable);
+    
+    /**
+     * 根据员工姓名和状态模糊查询请假记录（分页），排除指定员工
+     * @param employeeName 员工姓名（部分）
+     * @param status 状态
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getLeaveRecordsByEmployeeNameAndStatusExcludeEmployee(String employeeName, Integer status, String excludeEmployeeNo, Pageable pageable);
 } 

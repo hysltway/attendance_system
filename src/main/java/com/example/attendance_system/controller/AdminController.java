@@ -55,6 +55,8 @@ public class AdminController {
      * @param current 当前页码
      * @param size 每页记录数
      * @param adminNo 当前管理员编号（用于过滤自己的申请）
+     * @param employeeNo 员工编号筛选（可选）
+     * @param name 员工姓名筛选（可选）
      * @return 分页查询结果
      */
     @Operation(summary = "获取所有待处理的异常申诉记录", description = "管理员获取所有提交了申诉但尚未处理的异常考勤记录，支持分页浏览，自动过滤管理员自己的申诉")
@@ -79,13 +81,19 @@ public class AdminController {
             @RequestParam(required = false) Integer size,
             
             @Parameter(description = "当前管理员编号", required = true)
-            @RequestParam String adminNo) {
+            @RequestParam String adminNo,
+            
+            @Parameter(description = "员工编号筛选（可选）")
+            @RequestParam(required = false) String employeeNo,
+            
+            @Parameter(description = "员工姓名筛选（可选）")
+            @RequestParam(required = false) String name) {
         try {
             if (adminNo == null || adminNo.isEmpty()) {
                 throw new IllegalArgumentException("管理员编号不能为空");
             }
             
-            AttendanceExceptionPageDTO result = attendanceService.getAllExceptionAppealsExcludeEmployee(current, size, adminNo);
+            AttendanceExceptionPageDTO result = attendanceService.getAllExceptionAppealsExcludeEmployee(current, size, adminNo, employeeNo, name);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
@@ -181,6 +189,7 @@ public class AdminController {
      * @param size 每页记录数
      * @param status 状态筛选（可选）
      * @param employeeNo 员工编号（可选）
+     * @param name 员工姓名筛选（可选）
      * @param sortBy 排序字段（可选）
      * @param sortOrder 排序方式（可选）
      * @param adminNo 当前管理员编号（用于过滤自己的申请）
@@ -205,8 +214,11 @@ public class AdminController {
             @Parameter(description = "状态筛选：0-待审批，1-已批准，2-已拒绝")
             @RequestParam(required = false) Integer status,
             
-            @Parameter(description = "员工编号筛选")
+            @Parameter(description = "员工编号筛选（可选）")
             @RequestParam(required = false) String employeeNo,
+            
+            @Parameter(description = "员工姓名筛选（可选）")
+            @RequestParam(required = false) String name,
             
             @Parameter(description = "排序字段：createdTime-创建时间，startDate-开始日期")
             @RequestParam(defaultValue = "createdTime") String sortBy,
@@ -244,6 +256,9 @@ public class AdminController {
                     return ResponseEntity.badRequest().body(response);
                 }
                 leavePage = leaveService.getLeaveRecordsByEmployeeNoAndStatus(employeeNo, status, pageable);
+            } else if (status != null && name != null && !name.trim().isEmpty()) {
+                // 按员工姓名和状态查询
+                leavePage = leaveService.getLeaveRecordsByEmployeeNameAndStatusExcludeEmployee(name, status, adminNo, pageable);
             } else if (status != null) {
                 leavePage = leaveService.getLeaveRecordsByStatusExcludeEmployee(status, adminNo, pageable);
             } else if (employeeNo != null && !employeeNo.trim().isEmpty()) {
@@ -255,6 +270,9 @@ public class AdminController {
                     return ResponseEntity.badRequest().body(response);
                 }
                 leavePage = leaveService.getLeaveRecordsByEmployeeNo(employeeNo, pageable);
+            } else if (name != null && !name.trim().isEmpty()) {
+                // 按员工姓名查询
+                leavePage = leaveService.getLeaveRecordsByEmployeeNameExcludeEmployee(name, adminNo, pageable);
             } else {
                 leavePage = leaveService.getAllLeaveRecordsExcludeEmployee(adminNo, pageable);
             }

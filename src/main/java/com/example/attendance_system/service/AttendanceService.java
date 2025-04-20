@@ -60,9 +60,11 @@ public interface AttendanceService {
      * @param current 当前页码（从1开始）
      * @param size 每页记录数
      * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNo 员工编号筛选（可选）
+     * @param name 员工姓名筛选（可选）
      * @return 分页查询结果
      */
-    AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo);
+    AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo, String employeeNo, String name);
     
     /**
      * 管理员更新异常考勤记录

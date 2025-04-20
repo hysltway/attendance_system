@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 考勤服务实现类
@@ -597,7 +598,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo) {
+    public AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo, String employeeNo, String name) {
         // 参数校验
         if (current == null || current < 1) {
             current = 1;
@@ -613,7 +614,32 @@ public class AttendanceServiceImpl implements AttendanceService {
         Pageable pageable = PageRequest.of(current - 1, size);
         
         // 查询所有已提交申诉的异常考勤记录，排除指定员工
-        Page<AttendanceRecord> page = attendanceRecordRepository.findAllExceptionAppealsExcludeEmployee(excludeEmployeeNo, pageable);
+        Page<AttendanceRecord> page;
+        
+        // 根据条件查询
+        if (employeeNo != null && !employeeNo.trim().isEmpty()) {
+            // 按员工编号查询
+            page = attendanceRecordRepository.findAllExceptionAppealsByEmployeeNo(excludeEmployeeNo, employeeNo, pageable);
+        } else if (name != null && !name.trim().isEmpty()) {
+            // 按员工姓名查询
+            // 先查找匹配姓名的员工
+            List<Employee> employees = employeeRepository.findByNameContaining(name);
+            if (employees.isEmpty()) {
+                // 没有匹配的员工，返回空结果
+                page = Page.empty(pageable);
+            } else {
+                // 获取员工编号列表
+                List<String> employeeNos = employees.stream()
+                    .map(Employee::getEmployeeNo)
+                    .collect(Collectors.toList());
+                
+                // 按员工编号列表查询
+                page = attendanceRecordRepository.findAllExceptionAppealsByEmployeeNos(excludeEmployeeNo, employeeNos, pageable);
+            }
+        } else {
+            // 查询所有记录
+            page = attendanceRecordRepository.findAllExceptionAppealsExcludeEmployee(excludeEmployeeNo, pageable);
+        }
         
         // 转换为DTO对象
         List<AttendanceExceptionDTO> records = new ArrayList<>();

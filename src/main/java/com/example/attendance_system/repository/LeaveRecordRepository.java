@@ -107,4 +107,34 @@ public interface LeaveRecordRepository extends JpaRepository<LeaveRecord, Long> 
     @Query("SELECT DISTINCT l.employeeNo FROM LeaveRecord l " +
            "WHERE l.status = 1 AND :date BETWEEN l.startDate AND l.endDate")
     List<String> findEmployeesOnLeave(@Param("date") LocalDate date);
+
+    /**
+     * 根据员工姓名查询请假记录（排除指定员工）
+     * @param employeeName 员工姓名
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    @Query("SELECT lr FROM LeaveRecord lr JOIN Employee e ON lr.employeeNo = e.employeeNo " +
+           "WHERE e.name LIKE %:employeeName% AND lr.employeeNo != :excludeEmployeeNo")
+    Page<LeaveRecord> findByEmployeeNameContainingAndEmployeeNoNot(
+            @Param("employeeName") String employeeName, 
+            @Param("excludeEmployeeNo") String excludeEmployeeNo,
+            Pageable pageable);
+    
+    /**
+     * 根据员工姓名和状态查询请假记录（排除指定员工）
+     * @param employeeName 员工姓名
+     * @param status 审批状态
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    @Query("SELECT lr FROM LeaveRecord lr JOIN Employee e ON lr.employeeNo = e.employeeNo " +
+           "WHERE e.name LIKE %:employeeName% AND lr.status = :status AND lr.employeeNo != :excludeEmployeeNo")
+    Page<LeaveRecord> findByEmployeeNameContainingAndStatusAndEmployeeNoNot(
+            @Param("employeeName") String employeeName,
+            @Param("status") Integer status,
+            @Param("excludeEmployeeNo") String excludeEmployeeNo,
+            Pageable pageable);
 } 

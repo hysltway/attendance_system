@@ -57,9 +57,11 @@ public interface EmployeeService {
     /**
      * 查询所有待审核的员工信息更新请求，排除指定员工
      * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNo 员工编号筛选（可选）
+     * @param name 员工姓名筛选（可选）
      * @return 请求列表
      */
-    List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo);
+    List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo, String employeeNo, String name);
     
     /**
      * 审核员工信息更新请求

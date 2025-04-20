@@ -93,4 +93,30 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
      */
     @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true AND a.employeeNo != :excludeEmployeeNo ORDER BY a.checkTime DESC")
     Page<AttendanceRecord> findAllExceptionAppealsExcludeEmployee(@Param("excludeEmployeeNo") String excludeEmployeeNo, Pageable pageable);
+    
+    /**
+     * 按员工编号查询已提交申诉但未处理的异常考勤记录，排除指定员工
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNo 要查询的员工编号
+     * @param pageable 分页参数
+     * @return 异常考勤记录分页结果
+     */
+    @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true AND a.employeeNo != :excludeEmployeeNo AND a.employeeNo = :employeeNo ORDER BY a.checkTime DESC")
+    Page<AttendanceRecord> findAllExceptionAppealsByEmployeeNo(
+            @Param("excludeEmployeeNo") String excludeEmployeeNo,
+            @Param("employeeNo") String employeeNo, 
+            Pageable pageable);
+    
+    /**
+     * 按员工编号列表查询已提交申诉但未处理的异常考勤记录，排除指定员工
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNos 要查询的员工编号列表
+     * @param pageable 分页参数
+     * @return 异常考勤记录分页结果
+     */
+    @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true AND a.employeeNo != :excludeEmployeeNo AND a.employeeNo IN :employeeNos ORDER BY a.checkTime DESC")
+    Page<AttendanceRecord> findAllExceptionAppealsByEmployeeNos(
+            @Param("excludeEmployeeNo") String excludeEmployeeNo,
+            @Param("employeeNos") List<String> employeeNos, 
+            Pageable pageable);
 } 
