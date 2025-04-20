@@ -47,6 +47,11 @@ public class LeaveServiceImpl implements LeaveService {
             throw new IllegalStateException("该请假申请已被处理，无法再次审批");
         }
         
+        // 防止管理员审批自己的请假记录
+        if (leaveRecord.getEmployeeNo().equals(approverNo)) {
+            throw new IllegalStateException("管理员不能审批自己的请假申请");
+        }
+        
         // 更新审批信息
         leaveRecord.setStatus(status);
         leaveRecord.setApproverNo(approverNo);
@@ -77,8 +82,18 @@ public class LeaveServiceImpl implements LeaveService {
     }
     
     @Override
+    public Page<LeaveRecord> getAllLeaveRecordsExcludeEmployee(String excludeEmployeeNo, Pageable pageable) {
+        return leaveRecordRepository.findByEmployeeNoNot(excludeEmployeeNo, pageable);
+    }
+    
+    @Override
     public Page<LeaveRecord> getLeaveRecordsByStatus(Integer status, Pageable pageable) {
         return leaveRecordRepository.findByStatus(status, pageable);
+    }
+    
+    @Override
+    public Page<LeaveRecord> getLeaveRecordsByStatusExcludeEmployee(Integer status, String excludeEmployeeNo, Pageable pageable) {
+        return leaveRecordRepository.findByStatusAndEmployeeNoNot(status, excludeEmployeeNo, pageable);
     }
     
     @Override

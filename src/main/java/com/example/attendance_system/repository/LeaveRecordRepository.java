@@ -58,6 +58,23 @@ public interface LeaveRecordRepository extends JpaRepository<LeaveRecord, Long> 
     Page<LeaveRecord> findByStatus(Integer status, Pageable pageable);
     
     /**
+     * 排除指定员工后，查询所有请假记录（分页）
+     * @param employeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> findByEmployeeNoNot(String employeeNo, Pageable pageable);
+    
+    /**
+     * 排除指定员工后，根据状态查询请假记录（分页）
+     * @param status 审批状态
+     * @param employeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> findByStatusAndEmployeeNoNot(Integer status, String employeeNo, Pageable pageable);
+    
+    /**
      * 检查指定员工在指定日期是否有已批准的请假记录
      * @param employeeNo 员工编号
      * @param date 日期

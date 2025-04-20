@@ -21,4 +21,9 @@ public class EmployeeInfoUpdateAuditDTO {
      * 审核意见
      */
     private String adminComment;
+    
+    /**
+     * 管理员编号（审核人）
+     */
+    private String adminNo;
 } 

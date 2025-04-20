@@ -31,6 +31,11 @@ public class AttendanceExceptionPageDTO {
     private Long total;
     
     /**
+     * 总页数
+     */
+    private Integer pages;
+    
+    /**
      * 异常考勤记录列表
      */
     private List<AttendanceExceptionDTO> records;

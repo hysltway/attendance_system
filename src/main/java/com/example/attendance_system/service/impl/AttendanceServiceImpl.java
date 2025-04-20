@@ -579,4 +579,60 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .records(records)
                 .build();
     }
+
+    @Override
+    public AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo) {
+        // 参数校验
+        if (current == null || current < 1) {
+            current = 1;
+        }
+        if (size == null || size < 1) {
+            size = 10;
+        }
+        if (excludeEmployeeNo == null || excludeEmployeeNo.isEmpty()) {
+            throw new IllegalArgumentException("排除的员工编号不能为空");
+        }
+        
+        // 创建分页参数，注意：JPA分页从0开始计数
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
+        // 查询所有已提交申诉的异常考勤记录，排除指定员工
+        Page<AttendanceRecord> page = attendanceRecordRepository.findAllExceptionAppealsExcludeEmployee(excludeEmployeeNo, pageable);
+        
+        // 转换为DTO对象
+        List<AttendanceExceptionDTO> records = new ArrayList<>();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        
+        for (AttendanceRecord record : page.getContent()) {
+            // 同现有实现转换DTO
+            AttendanceExceptionDTO dto = AttendanceExceptionDTO.builder()
+                    .id(record.getId())
+                    .date(record.getCheckTime().format(dateFormatter))
+                    .checkTime(record.getCheckTime())
+                    .checkType(record.getCheckType())
+                    .checkTypeText(getCheckTypeText(record.getCheckType()))
+                    .checkStatus(record.getStatus())
+                    .checkTypeDesc(getCheckTypeDesc(record.getStatus()))
+                    .reason(record.getReason())
+                    .employeeNo(record.getEmployeeNo())
+                    .explanation(record.getExplanation())
+                    .remark(record.getRemark())
+                    .submittedToAdmin(record.getSubmittedToAdmin())
+                    .processedByAdmin(record.getProcessedByAdmin())
+                    .checkMethod(record.getCheckMethod())
+                    .checkMethodText(getCheckMethodText(record.getCheckMethod()))
+                    .build();
+            records.add(dto);
+        }
+        
+        // 构建结果对象
+        AttendanceExceptionPageDTO result = new AttendanceExceptionPageDTO();
+        result.setCurrent(current);
+        result.setSize(size);
+        result.setTotal(page.getTotalElements());
+        result.setPages(page.getTotalPages());
+        result.setRecords(records);
+        
+        return result;
+    }
 } 

@@ -49,9 +49,10 @@ public class AdminController {
      * 获取所有待处理的异常申诉记录
      * @param current 当前页码
      * @param size 每页记录数
+     * @param adminNo 当前管理员编号（用于过滤自己的申请）
      * @return 分页查询结果
      */
-    @Operation(summary = "获取所有待处理的异常申诉记录", description = "管理员获取所有提交了申诉但尚未处理的异常考勤记录，支持分页浏览")
+    @Operation(summary = "获取所有待处理的异常申诉记录", description = "管理员获取所有提交了申诉但尚未处理的异常考勤记录，支持分页浏览，自动过滤管理员自己的申诉")
     @SecurityRequirement(name = "bearer-jwt")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "查询成功", 
@@ -68,11 +69,25 @@ public class AdminController {
     public ResponseEntity<?> getAllExceptionAppeals(
             @Parameter(description = "当前页码，从1开始计数")
             @RequestParam(required = false) Integer current,
+            
             @Parameter(description = "每页记录数")
-            @RequestParam(required = false) Integer size) {
+            @RequestParam(required = false) Integer size,
+            
+            @Parameter(description = "当前管理员编号", required = true)
+            @RequestParam String adminNo) {
         try {
-            AttendanceExceptionPageDTO result = attendanceService.getAllExceptionAppeals(current, size);
+            if (adminNo == null || adminNo.isEmpty()) {
+                throw new IllegalArgumentException("管理员编号不能为空");
+            }
+            
+            AttendanceExceptionPageDTO result = attendanceService.getAllExceptionAppealsExcludeEmployee(current, size, adminNo);
             return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            
+            return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
@@ -163,9 +178,10 @@ public class AdminController {
      * @param employeeNo 员工编号（可选）
      * @param sortBy 排序字段（可选）
      * @param sortOrder 排序方式（可选）
+     * @param adminNo 当前管理员编号（用于过滤自己的申请）
      * @return 请假记录分页结果
      */
-    @Operation(summary = "获取所有员工请假申请记录", description = "管理员查看全体员工提交的请假申请，支持按状态筛选、员工筛选，以及分页、排序等操作")
+    @Operation(summary = "获取所有员工请假申请记录", description = "管理员查看全体员工提交的请假申请，支持按状态筛选、员工筛选，以及分页、排序等操作，自动过滤管理员自己的申请")
     @SecurityRequirement(name = "bearer-jwt")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "查询成功"),
@@ -191,7 +207,10 @@ public class AdminController {
             @RequestParam(defaultValue = "createdTime") String sortBy,
             
             @Parameter(description = "排序方式：asc-升序，desc-降序")
-            @RequestParam(defaultValue = "desc") String sortOrder) {
+            @RequestParam(defaultValue = "desc") String sortOrder,
+            
+            @Parameter(description = "当前管理员编号", required = true)
+            @RequestParam String adminNo) {
         try {
             // 参数校验
             if (current < 1) {
@@ -200,22 +219,39 @@ public class AdminController {
             if (size < 1 || size > 100) {
                 throw new IllegalArgumentException("每页记录数必须在1-100之间");
             }
+            if (adminNo == null || adminNo.isEmpty()) {
+                throw new IllegalArgumentException("管理员编号不能为空");
+            }
             
             // 创建排序对象
             Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
             // 创建分页对象
             Pageable pageable = PageRequest.of(current - 1, size, sort);
             
-            // 获取请假记录
+            // 获取请假记录 - 排除当前管理员自己的申请
             Page<LeaveRecord> leavePage;
             if (status != null && employeeNo != null) {
+                // 确保不是查询管理员自己的记录
+                if (employeeNo.equals(adminNo)) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", false);
+                    response.put("message", "管理员不能查看和审批自己的请假申请");
+                    return ResponseEntity.badRequest().body(response);
+                }
                 leavePage = leaveService.getLeaveRecordsByEmployeeNoAndStatus(employeeNo, status, pageable);
             } else if (status != null) {
-                leavePage = leaveService.getLeaveRecordsByStatus(status, pageable);
+                leavePage = leaveService.getLeaveRecordsByStatusExcludeEmployee(status, adminNo, pageable);
             } else if (employeeNo != null) {
+                // 确保不是查询管理员自己的记录
+                if (employeeNo.equals(adminNo)) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", false);
+                    response.put("message", "管理员不能查看和审批自己的请假申请");
+                    return ResponseEntity.badRequest().body(response);
+                }
                 leavePage = leaveService.getLeaveRecordsByEmployeeNo(employeeNo, pageable);
             } else {
-                leavePage = leaveService.getAllLeaveRecords(pageable);
+                leavePage = leaveService.getAllLeaveRecordsExcludeEmployee(adminNo, pageable);
             }
             
             // 转换为DTO对象

@@ -148,25 +148,42 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
     
     @Override
-    @Transactional
-    public EmployeeInfoUpdateRequest auditInfoUpdateRequest(EmployeeInfoUpdateAuditDTO auditDTO) {
-        // 检查请求是否存在，不存在则抛出异常
-        EmployeeInfoUpdateRequest request = employeeInfoUpdateRequestRepository.findById(auditDTO.getRequestId())
-                .orElseThrow(() -> new IllegalArgumentException("更新请求不存在"));
-        
-        // 检查请求状态，如果不是待审核状态(0)，则抛出异常
-        if (request.getStatus() != 0) {
-            throw new IllegalArgumentException("该请求已经被审核过了");
+    public List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo) {
+        if (excludeEmployeeNo == null || excludeEmployeeNo.trim().isEmpty()) {
+            throw new IllegalArgumentException("排除的员工编号不能为空");
         }
         
-        // 更新请求状态为审核结果（1-通过，2-拒绝）
+        // 查询所有待审核(0)的信息更新请求，排除指定员工，按创建时间升序排列（先提交先审核）
+        return employeeInfoUpdateRequestRepository.findByStatusAndEmployeeNoNotOrderByCreatedTimeAsc(0, excludeEmployeeNo);
+    }
+    
+    @Override
+    @Transactional
+    public EmployeeInfoUpdateRequest auditInfoUpdateRequest(EmployeeInfoUpdateAuditDTO auditDTO) {
+        // 查询请求信息
+        EmployeeInfoUpdateRequest request = employeeInfoUpdateRequestRepository.findById(auditDTO.getRequestId())
+                .orElseThrow(() -> new IllegalArgumentException("信息更新请求不存在"));
+        
+        // 验证请求状态必须为待审核(0)
+        if (request.getStatus() != 0) {
+            throw new IllegalStateException("该请求已经审核过，无法再次审核");
+        }
+        
+        // 验证审核状态是否合法
+        if (auditDTO.getStatus() != 1 && auditDTO.getStatus() != 2) {
+            throw new IllegalArgumentException("审核状态不合法，只能是1（通过）或2（拒绝）");
+        }
+        
+        // 如果审核人是请求的申请人，则不允许审核
+        if (request.getEmployeeNo().equals(auditDTO.getAdminNo())) {
+            throw new IllegalStateException("管理员不能审核自己的信息更新申请");
+        }
+        
+        // 更新审核状态和意见
         request.setStatus(auditDTO.getStatus());
-        // 设置管理员审核意见
         request.setAdminComment(auditDTO.getAdminComment());
-        // 设置审核时间为当前时间
         request.setAuditTime(LocalDateTime.now());
         
-        // 如果审核通过(1)，则更新员工信息
         if (auditDTO.getStatus() == 1) {
             // 查询员工信息
             Employee employee = employeeRepository.findByEmployeeNo(request.getEmployeeNo());

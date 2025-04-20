@@ -61,12 +61,29 @@ public interface LeaveService {
     Page<LeaveRecord> getAllLeaveRecords(Pageable pageable);
     
     /**
+     * 获取所有请假记录（分页），排除指定员工
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getAllLeaveRecordsExcludeEmployee(String excludeEmployeeNo, Pageable pageable);
+    
+    /**
      * 根据状态获取所有请假记录（分页）
      * @param status 状态
      * @param pageable 分页参数
      * @return 分页请假记录
      */
     Page<LeaveRecord> getLeaveRecordsByStatus(Integer status, Pageable pageable);
+    
+    /**
+     * 根据状态获取所有请假记录（分页），排除指定员工
+     * @param status 状态
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getLeaveRecordsByStatusExcludeEmployee(Integer status, String excludeEmployeeNo, Pageable pageable);
     
     /**
      * 根据员工编号获取所有请假记录（分页）

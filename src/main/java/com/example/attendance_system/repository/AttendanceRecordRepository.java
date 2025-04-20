@@ -84,4 +84,13 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
      */
     @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true ORDER BY a.checkTime DESC")
     Page<AttendanceRecord> findAllExceptionAppeals(Pageable pageable);
+
+    /**
+     * 查询所有已提交申诉但未处理的异常考勤记录（submittedToAdmin为true），排除指定员工
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param pageable 分页参数
+     * @return 异常考勤记录分页结果
+     */
+    @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true AND a.employeeNo != :excludeEmployeeNo ORDER BY a.checkTime DESC")
+    Page<AttendanceRecord> findAllExceptionAppealsExcludeEmployee(@Param("excludeEmployeeNo") String excludeEmployeeNo, Pageable pageable);
 } 

@@ -33,4 +33,12 @@ public interface EmployeeInfoUpdateRequestRepository extends JpaRepository<Emplo
      * @return 员工信息更新请求列表
      */
     List<EmployeeInfoUpdateRequest> findByStatusOrderByCreatedTimeAsc(Integer status);
+    
+    /**
+     * 查询所有待审核的员工信息更新请求，排除指定员工
+     * @param status 状态
+     * @param employeeNo 要排除的员工编号
+     * @return 员工信息更新请求列表
+     */
+    List<EmployeeInfoUpdateRequest> findByStatusAndEmployeeNoNotOrderByCreatedTimeAsc(Integer status, String employeeNo);
 } 

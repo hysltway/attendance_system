@@ -56,6 +56,15 @@ public interface AttendanceService {
     AttendanceExceptionPageDTO getAllExceptionAppeals(Integer current, Integer size);
     
     /**
+     * 管理员获取所有提交了申诉的异常考勤记录，排除指定员工
+     * @param current 当前页码（从1开始）
+     * @param size 每页记录数
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @return 分页查询结果
+     */
+    AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo);
+    
+    /**
      * 管理员更新异常考勤记录
      * @param updateDTO 更新信息
      * @return 更新后的考勤记录
