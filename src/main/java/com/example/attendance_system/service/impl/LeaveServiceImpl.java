@@ -5,6 +5,8 @@ import com.example.attendance_system.repository.LeaveRecordRepository;
 import com.example.attendance_system.service.LeaveService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +59,41 @@ public class LeaveServiceImpl implements LeaveService {
     @Override
     public List<LeaveRecord> getEmployeeLeaveRecords(String employeeNo) {
         return leaveRecordRepository.findByEmployeeNo(employeeNo);
+    }
+    
+    @Override
+    public Page<LeaveRecord> getEmployeeLeaveRecords(String employeeNo, Pageable pageable) {
+        return leaveRecordRepository.findByEmployeeNo(employeeNo, pageable);
+    }
+    
+    @Override
+    public Page<LeaveRecord> getEmployeeLeaveRecordsByStatus(String employeeNo, Integer status, Pageable pageable) {
+        return leaveRecordRepository.findByEmployeeNoAndStatus(employeeNo, status, pageable);
+    }
+    
+    @Override
+    public Page<LeaveRecord> getAllLeaveRecords(Pageable pageable) {
+        return leaveRecordRepository.findAll(pageable);
+    }
+    
+    @Override
+    public Page<LeaveRecord> getLeaveRecordsByStatus(Integer status, Pageable pageable) {
+        return leaveRecordRepository.findByStatus(status, pageable);
+    }
+    
+    @Override
+    public Page<LeaveRecord> getLeaveRecordsByEmployeeNo(String employeeNo, Pageable pageable) {
+        return leaveRecordRepository.findByEmployeeNo(employeeNo, pageable);
+    }
+    
+    @Override
+    public Page<LeaveRecord> getLeaveRecordsByEmployeeNoAndStatus(String employeeNo, Integer status, Pageable pageable) {
+        return leaveRecordRepository.findByEmployeeNoAndStatus(employeeNo, status, pageable);
+    }
+    
+    @Override
+    public boolean hasOverlappingLeave(String employeeNo, LocalDate startDate, LocalDate endDate) {
+        return leaveRecordRepository.hasOverlappingLeave(employeeNo, startDate, endDate);
     }
 
     @Override

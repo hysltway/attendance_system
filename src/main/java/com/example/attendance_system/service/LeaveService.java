@@ -1,6 +1,8 @@
 package com.example.attendance_system.service;
 
 import com.example.attendance_system.entity.LeaveRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,11 +30,69 @@ public interface LeaveService {
     LeaveRecord approveLeaveApplication(Long id, String approverNo, Integer status, String remark);
     
     /**
-     * 获取员工请假记录
+     * 获取员工请假记录（不分页）
      * @param employeeNo 员工编号
      * @return 请假记录列表
      */
     List<LeaveRecord> getEmployeeLeaveRecords(String employeeNo);
+    
+    /**
+     * 获取员工请假记录（分页）
+     * @param employeeNo 员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getEmployeeLeaveRecords(String employeeNo, Pageable pageable);
+    
+    /**
+     * 根据状态获取员工请假记录（分页）
+     * @param employeeNo 员工编号
+     * @param status 状态
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getEmployeeLeaveRecordsByStatus(String employeeNo, Integer status, Pageable pageable);
+    
+    /**
+     * 获取所有请假记录（分页）
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getAllLeaveRecords(Pageable pageable);
+    
+    /**
+     * 根据状态获取所有请假记录（分页）
+     * @param status 状态
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getLeaveRecordsByStatus(Integer status, Pageable pageable);
+    
+    /**
+     * 根据员工编号获取所有请假记录（分页）
+     * @param employeeNo 员工编号
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getLeaveRecordsByEmployeeNo(String employeeNo, Pageable pageable);
+    
+    /**
+     * 根据员工编号和状态获取所有请假记录（分页）
+     * @param employeeNo 员工编号
+     * @param status 状态
+     * @param pageable 分页参数
+     * @return 分页请假记录
+     */
+    Page<LeaveRecord> getLeaveRecordsByEmployeeNoAndStatus(String employeeNo, Integer status, Pageable pageable);
+    
+    /**
+     * 检查是否与已有请假记录重叠
+     * @param employeeNo 员工编号
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     * @return 是否重叠
+     */
+    boolean hasOverlappingLeave(String employeeNo, LocalDate startDate, LocalDate endDate);
     
     /**
      * 获取待审批的请假记录
