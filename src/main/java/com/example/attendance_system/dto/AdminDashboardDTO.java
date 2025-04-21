@@ -45,7 +45,7 @@ public class AdminDashboardDTO {
     /**
      * 异常预警数据
      */
-    private AbnormalWarningDTO abnormaWlarning;
+    private AbnormalWarningDTO abnormalWarning;
     
     /**
      * 审批统计数据
