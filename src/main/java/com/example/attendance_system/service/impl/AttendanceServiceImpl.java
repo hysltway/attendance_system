@@ -564,12 +564,14 @@ public class AttendanceServiceImpl implements AttendanceService {
         
         // 转换为DTO对象
         List<AttendanceRecordDTO> records = new ArrayList<>();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         
         for (AttendanceRecord record : page.getContent()) {
             AttendanceRecordDTO dto = AttendanceRecordDTO.builder()
                     .id(record.getId())
                     .employeeNo(record.getEmployeeNo())
                     .checkTime(record.getCheckTime())
+                    .checkTimeStr(record.getCheckTime().format(timeFormatter))
                     .checkType(record.getCheckType())
                     .checkTypeDesc(getCheckTypeText(record.getCheckType()))
                     .checkMethod(record.getCheckMethod())
