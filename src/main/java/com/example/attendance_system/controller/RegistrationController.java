@@ -59,7 +59,7 @@ public class RegistrationController {
     })
     @PostMapping("/new")
     public ResponseEntity<?> registerEmployee(
-            @Parameter(description = "员工注册信息", required = true)
+            @Parameter(description = "员工注册信息（必填），包含员工编号、姓名、性别、手机号等必填信息", required = true)
             @RequestBody EmployeeRegistrationDTO registrationDTO) {
         try {
             Employee employee = employeeService.registerEmployee(registrationDTO);
@@ -68,7 +68,7 @@ public class RegistrationController {
             response.put("success", true);
             response.put("message", "员工注册成功");
             response.put("employeeNo", employee.getEmployeeNo());
-            response.put("employeeId", employee.getId());
+            response.put("name", employee.getName());
 
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
@@ -93,7 +93,7 @@ public class RegistrationController {
      * @param faceEnrollmentDTO 人脸录入DTO
      * @return 录入结果
      */
-    @Operation(summary = "人脸录入(Base64)", description = "使用Base64编码的图像进行人脸特征录入")
+    @Operation(summary = "人脸录入(Base64)", description = "使用Base64编码的图像进行人脸特征录入，适用于移动端直接上传拍摄的照片")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "人脸录入成功",
                     content = @Content(mediaType = "application/json",
@@ -107,7 +107,7 @@ public class RegistrationController {
     })
     @PostMapping("/face-enroll/base64")
     public ResponseEntity<?> enrollFaceImageBase64(
-            @Parameter(description = "人脸录入信息，包含员工编号和Base64编码的人脸图像", required = true)
+            @Parameter(description = "人脸录入信息（必填），包含员工编号和Base64编码的人脸图像，图像应清晰显示正面人脸", required = true)
             @RequestBody FaceEnrollmentDTO faceEnrollmentDTO) {
         try {
             FaceFeature faceFeature = faceFeatureService.enrollFaceFeatureByBase64(faceEnrollmentDTO);
@@ -142,7 +142,7 @@ public class RegistrationController {
      * @param faceImageFile 人脸图像文件
      * @return 录入结果
      */
-    @Operation(summary = "人脸录入(文件上传)", description = "通过上传图像文件进行人脸特征录入")
+    @Operation(summary = "人脸录入(文件上传)", description = "通过上传图像文件进行人脸特征录入，适用于PC端选择本地照片上传")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "人脸录入成功",
                     content = @Content(mediaType = "application/json",
@@ -156,9 +156,10 @@ public class RegistrationController {
     })
     @PostMapping(value = "/face-enroll", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> enrollFaceImage(
-            @Parameter(description = "员工编号", required = true)
+            @Parameter(description = "员工编号（必填）", required = true, example = "EMP2025001")
             @RequestParam("employeeNo") String employeeNo,
-            @Parameter(description = "人脸图像文件，支持JPG、PNG格式", required = true)
+            
+            @Parameter(description = "人脸图像文件（必填），支持JPG、PNG格式，建议分辨率不低于640x480，人脸应清晰可见", required = true)
             @RequestParam("faceImageFile") MultipartFile faceImageFile) {
         try {
             FaceFeature faceFeature = faceFeatureService.enrollFaceFeatureByFile(employeeNo, faceImageFile);

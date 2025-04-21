@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/attendance")
 @CrossOrigin
-@Tag(name = "考勤管理", description = "考勤打卡相关接口")
+@Tag(name = "考勤打卡", description = "提供人脸识别打卡、管理员补卡等功能")
 public class AttendanceController {
 
     @Autowired
@@ -36,7 +36,7 @@ public class AttendanceController {
      * @param checkMethod 打卡方式：1-人脸识别，2-管理员录入，3-系统自动生成，默认为1
      * @return 打卡结果
      */
-    @Operation(summary = "人脸识别打卡", description = "上传人脸图像进行身份识别并记录打卡")
+    @Operation(summary = "人脸识别打卡", description = "上传人脸图像进行身份识别并记录打卡，系统会自动判断当前是上班打卡还是下班打卡")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "打卡成功", 
                     content = @Content(mediaType = "application/json", 
@@ -50,10 +50,10 @@ public class AttendanceController {
     })
     @PostMapping("/face")
     public ResponseEntity<FaceRecognitionDTO> faceRecognition(
-            @Parameter(description = "人脸图像文件，支持JPG、PNG格式", required = true)
+            @Parameter(description = "人脸图像文件（必填），支持JPG、PNG格式，建议分辨率不低于640x480", required = true)
             @RequestParam("file") MultipartFile file,
             
-            @Parameter(description = "打卡方式：1-人脸识别，2-管理员录入，3-系统自动生成，默认为1")
+            @Parameter(description = "打卡方式（可选）：1=人脸识别，2=管理员录入，3=系统自动生成，默认为1", example = "1")
             @RequestParam(value = "checkMethod", required = false, defaultValue = "1") Integer checkMethod) {
         log.info("收到人脸识别打卡请求，文件大小: {} bytes, 打卡方式: {}", file.getSize(), checkMethod);
         
