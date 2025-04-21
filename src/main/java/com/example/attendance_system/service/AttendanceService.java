@@ -36,7 +36,7 @@ public interface AttendanceService {
      * @param employeeNo 员工编号
      * @param current 当前页码
      * @param size 每页记录数
-     * @param timeRange 时间范围类型：1-当月, 2-上月, 3-本季度, 4-本年度, 其他值-不限时间范围
+     * @param timeRange     
      * @return 考勤记录分页结果
      */
     AttendanceRecordPageDTO getAttendanceRecords(String employeeNo, Integer current, Integer size, Integer timeRange);
