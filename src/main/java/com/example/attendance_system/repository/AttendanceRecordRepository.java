@@ -43,6 +43,17 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
             String employeeNo, LocalDateTime startTime, LocalDateTime endTime);
 
     /**
+     * 根据员工编号和时间范围查询考勤记录，并按打卡时间降序排序
+     * @param employeeNo 员工编号
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param pageable 分页参数
+     * @return 考勤记录分页结果
+     */
+    Page<AttendanceRecord> findByEmployeeNoAndCheckTimeBetweenOrderByCheckTimeDesc(
+            String employeeNo, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
+
+    /**
      * 查询员工在指定日期是否已有打卡记录
      * @param employeeNo 员工编号
      * @param startOfDay 当天开始时间

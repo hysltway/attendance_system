@@ -550,6 +550,12 @@ public class AttendanceServiceImpl implements AttendanceService {
     
     @Override
     public AttendanceRecordPageDTO getAttendanceRecords(String employeeNo, Integer current, Integer size) {
+        // 默认不限制时间范围
+        return getAttendanceRecords(employeeNo, current, size, null);
+    }
+    
+    @Override
+    public AttendanceRecordPageDTO getAttendanceRecords(String employeeNo, Integer current, Integer size, Integer timeRange) {
         // 检查用户是否存在
         Employee employee = employeeRepository.findByEmployeeNo(employeeNo);
         if (employee == null) {
@@ -559,8 +565,59 @@ public class AttendanceServiceImpl implements AttendanceService {
         // 创建分页参数，注意：JPA分页从0开始计数
         Pageable pageable = PageRequest.of(current - 1, size);
         
+        // 根据时间范围确定开始和结束日期
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+        String timeRangeDesc = "全部";
+        
+        if (timeRange != null) {
+            LocalDate today = LocalDate.now();
+            
+            switch (timeRange) {
+                case 1: // 当月
+                    startDate = today.withDayOfMonth(1);
+                    endDate = today.withDayOfMonth(today.lengthOfMonth());
+                    timeRangeDesc = "当月";
+                    break;
+                case 2: // 上月
+                    LocalDate lastMonth = today.minusMonths(1);
+                    startDate = lastMonth.withDayOfMonth(1);
+                    endDate = lastMonth.withDayOfMonth(lastMonth.lengthOfMonth());
+                    timeRangeDesc = "上月";
+                    break;
+                case 3: // 本季度
+                    int currentQuarter = (today.getMonthValue() - 1) / 3 + 1;
+                    startDate = LocalDate.of(today.getYear(), (currentQuarter - 1) * 3 + 1, 1);
+                    endDate = LocalDate.of(today.getYear(), currentQuarter * 3, 1)
+                            .withDayOfMonth(LocalDate.of(today.getYear(), currentQuarter * 3, 1).lengthOfMonth());
+                    timeRangeDesc = "本季度";
+                    break;
+                case 4: // 本年度
+                    startDate = LocalDate.of(today.getYear(), 1, 1);
+                    endDate = LocalDate.of(today.getYear(), 12, 31);
+                    timeRangeDesc = "本年度";
+                    break;
+                default:
+                    // 不限制时间范围
+            }
+        }
+        
+        log.debug("查询考勤记录，时间范围: {}, 开始日期: {}, 结束日期: {}", timeRangeDesc, startDate, endDate);
+        
         // 查询所有考勤记录
-        Page<AttendanceRecord> page = attendanceRecordRepository.findByEmployeeNoOrderByCheckTimeDesc(employeeNo, pageable);
+        Page<AttendanceRecord> page;
+        if (startDate != null && endDate != null) {
+            // 设置时间范围
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+            
+            // 根据员工编号和时间范围查询分页数据
+            page = attendanceRecordRepository.findByEmployeeNoAndCheckTimeBetweenOrderByCheckTimeDesc(
+                    employeeNo, startDateTime, endDateTime, pageable);
+        } else {
+            // 不限制时间范围
+            page = attendanceRecordRepository.findByEmployeeNoOrderByCheckTimeDesc(employeeNo, pageable);
+        }
         
         // 转换为DTO对象
         List<AttendanceRecordDTO> records = new ArrayList<>();
@@ -589,13 +646,63 @@ public class AttendanceServiceImpl implements AttendanceService {
             records.add(dto);
         }
         
-        // 构建分页结果
+        // 查询统计数据
+        List<AttendanceRecord> allRecords;
+        if (startDate != null && endDate != null) {
+            // 设置时间范围
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+            
+            // 根据员工编号和时间范围查询所有数据
+            allRecords = attendanceRecordRepository.findByEmployeeNoAndCheckTimeBetween(
+                    employeeNo, startDateTime, endDateTime);
+        } else {
+            // 不限制时间范围
+            allRecords = attendanceRecordRepository.findByEmployeeNo(employeeNo);
+        }
+        
+        // 使用Java 8流操作计算统计数据
+        // 出勤天数：状态为1(正常)、2(迟到)、3(早退)、5(加班)的不同日期数量
+        int attendanceDays = (int) allRecords.stream()
+                .filter(r -> r.getStatus() == 1 || r.getStatus() == 2 || r.getStatus() == 3 || r.getStatus() == 5)
+                .map(r -> r.getCheckTime().toLocalDate())
+                .distinct()
+                .count();
+        
+        // 迟到次数：状态为2(迟到)的记录数量
+        int lateTimes = (int) allRecords.stream()
+                .filter(r -> r.getStatus() == 2)
+                .count();
+        
+        // 早退次数：状态为3(早退)的记录数量
+        int earlyLeaveTimes = (int) allRecords.stream()
+                .filter(r -> r.getStatus() == 3)
+                .count();
+        
+        // 缺勤天数：状态为4(旷工)的不同日期数量
+        int absentDays = (int) allRecords.stream()
+                .filter(r -> r.getStatus() == 4)
+                .map(r -> r.getCheckTime().toLocalDate())
+                .distinct()
+                .count();
+        
+        // 加班次数：状态为5(加班)的记录数量
+        int overtimeTimes = (int) allRecords.stream()
+                .filter(r -> r.getStatus() == 5)
+                .count();
+        
+        // 构建分页结果，包含统计数据
         return AttendanceRecordPageDTO.builder()
                 .current(current)
                 .size(size)
                 .total(page.getTotalElements())
                 .pages(page.getTotalPages())
                 .records(records)
+                .attendanceDays(attendanceDays)
+                .lateTimes(lateTimes)
+                .earlyLeaveTimes(earlyLeaveTimes)
+                .absentDays(absentDays)
+                .overtimeTimes(overtimeTimes)
                 .build();
     }
 
