@@ -130,4 +130,29 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
             @Param("excludeEmployeeNo") String excludeEmployeeNo,
             @Param("employeeNos") List<String> employeeNos, 
             Pageable pageable);
+
+    /**
+     * 根据时间范围查询所有考勤记录
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 考勤记录列表
+     */
+    List<AttendanceRecord> findAllByCheckTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
+    
+    /**
+     * 统计submittedToAdmin为true的记录数（待处理的考勤异常申诉）
+     * @param submittedToAdmin 是否提交给管理员处理
+     * @return 记录数量
+     */
+    int countBySubmittedToAdmin(boolean submittedToAdmin);
+    
+    /**
+     * 统计已处理的考勤异常记录数量
+     * @param processedByAdmin 是否已被管理员处理
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 记录数量
+     */
+    int countByProcessedByAdminAndUpdatedTimeBetween(
+            boolean processedByAdmin, LocalDateTime startTime, LocalDateTime endTime);
 } 

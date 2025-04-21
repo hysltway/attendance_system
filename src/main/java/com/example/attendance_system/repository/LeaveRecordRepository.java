@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -137,4 +138,79 @@ public interface LeaveRecordRepository extends JpaRepository<LeaveRecord, Long> 
             @Param("status") Integer status,
             @Param("excludeEmployeeNo") String excludeEmployeeNo,
             Pageable pageable);
+
+    /**
+     * 根据员工编号和分页参数查询所有请假记录（按创建时间降序排序）
+     * @param employeeNo 员工编号
+     * @param pageable 分页参数
+     * @return 请假记录分页结果
+     */
+    Page<LeaveRecord> findByEmployeeNoOrderByCreatedTimeDesc(String employeeNo, Pageable pageable);
+    
+    /**
+     * 根据员工编号和状态查询所有请假记录（按创建时间降序排序）
+     * @param employeeNo 员工编号
+     * @param status 审批状态（0-待审批，1-已批准，2-已拒绝）
+     * @param pageable 分页参数
+     * @return 请假记录分页结果
+     */
+    Page<LeaveRecord> findByEmployeeNoAndStatusOrderByCreatedTimeDesc(
+            String employeeNo, Integer status, Pageable pageable);
+    
+    /**
+     * 查询指定日期范围内的已批准请假记录
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     * @return 请假记录列表
+     */
+    @Query("SELECT l FROM LeaveRecord l WHERE l.status = 1 AND" +
+            "((l.startDate BETWEEN :startDate AND :endDate) OR " +
+            "(l.endDate BETWEEN :startDate AND :endDate) OR " +
+            "(l.startDate <= :startDate AND l.endDate >= :endDate))")
+    List<LeaveRecord> findApprovedLeaveByDateRange(
+            @Param("startDate") LocalDate startDate, 
+            @Param("endDate") LocalDate endDate);
+    
+    /**
+     * 统计指定状态的请假记录数量
+     * @param status 审批状态（0-待审批，1-已批准，2-已拒绝）
+     * @return 记录数量
+     */
+    int countByStatus(Integer status);
+    
+    /**
+     * 统计指定状态列表和时间范围内的请假记录数量
+     * @param statusList 审批状态列表
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 记录数量
+     */
+    int countByStatusInAndApprovalTimeBetween(
+            List<Integer> statusList, LocalDateTime startTime, LocalDateTime endTime);
+            
+    /**
+     * 查询指定状态列表和时间范围内的请假记录
+     * @param statusList 审批状态列表
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 请假记录列表
+     */
+    List<LeaveRecord> findByStatusInAndApprovalTimeBetween(
+            List<Integer> statusList, LocalDateTime startTime, LocalDateTime endTime);
+            
+    /**
+     * 检查指定员工在指定日期范围内是否有请假记录
+     * @param employeeNo 员工编号
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     * @return 是否有重叠的请假记录
+     */
+    @Query("SELECT COUNT(l) > 0 FROM LeaveRecord l WHERE l.employeeNo = :employeeNo AND l.status <> 2 AND " +
+            "((l.startDate BETWEEN :startDate AND :endDate) OR " +
+            "(l.endDate BETWEEN :startDate AND :endDate) OR " +
+            "(l.startDate <= :startDate AND l.endDate >= :endDate))")
+    boolean existsOverlappingLeave(
+            @Param("employeeNo") String employeeNo,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 } 

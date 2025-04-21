@@ -66,6 +66,13 @@ public class Employee {
     private Long departmentId;
     
     /**
+     * 所属部门（非数据库字段，仅用于关联查询）
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id", insertable = false, updatable = false)
+    private Department department;
+    
+    /**
      * 职位
      */
     @Column(length = 50)
