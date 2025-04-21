@@ -85,4 +85,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @return 匹配的员工分页列表
      */
     Page<Employee> findByNameContainingAndDepartmentIdIn(String name, List<Long> departmentIds, Pageable pageable);
+    
+    /**
+     * 统计指定部门下的员工数量
+     * @param departmentId 部门ID
+     * @return 员工数量
+     */
+    int countByDepartmentId(Long departmentId);
 } 
