@@ -16,31 +16,31 @@ public class AnnouncementReadStatusDTO {
      */
     @Schema(description = "员工编号", example = "EMP2025001")
     private String employeeNo;
-    
+
     /**
      * 员工姓名
      */
     @Schema(description = "员工姓名", example = "张三")
     private String employeeName;
-    
+
     /**
      * 部门ID
      */
     @Schema(description = "部门ID", example = "1001")
     private Long departmentId;
-    
+
     /**
      * 部门名称
      */
     @Schema(description = "部门名称", example = "研发部")
     private String departmentName;
-    
+
     /**
      * 阅读状态：read-已读，unread-未读
      */
     @Schema(description = "阅读状态：read=已读，unread=未读", example = "read")
     private String status;
-    
+
     /**
      * 阅读时间
      */

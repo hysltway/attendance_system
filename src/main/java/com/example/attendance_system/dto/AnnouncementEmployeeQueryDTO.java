@@ -11,12 +11,12 @@ public class AnnouncementEmployeeQueryDTO {
      * 员工编号
      */
     private String employeeNo;
-    
+
     /**
      * 当前页码
      */
     private Integer current = 1;
-    
+
     /**
      * 每页记录数量
      */

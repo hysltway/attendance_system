@@ -12,19 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * 人脸特征服务实现类
@@ -33,16 +28,13 @@ import java.util.Optional;
 @Service
 public class FaceFeatureServiceImpl implements FaceFeatureService {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private FaceFeatureRepository faceFeatureRepository;
-
     @Autowired
     private EmployeeRepository employeeRepository;
-
     @Autowired
     private FaceRecognitionUtil faceRecognitionUtil;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 通过Base64编码的图像录入人脸特征
@@ -75,11 +67,11 @@ public class FaceFeatureServiceImpl implements FaceFeatureService {
         String imagePath = null;
         try {
             imagePath = faceRecognitionUtil.saveBase64ImageToTemp(faceImageBase64);
-            
+
             // 提取人脸特征
             String featureJson = faceRecognitionUtil.extractFaceFeature(imagePath);
             Map<String, Object> featureMap = objectMapper.readValue(featureJson, Map.class);
-            
+
             // 检查提取结果
             if (featureMap.containsKey("error")) {
                 throw new Exception(featureMap.get("error").toString());
@@ -131,16 +123,16 @@ public class FaceFeatureServiceImpl implements FaceFeatureService {
         String timeStamp = String.valueOf(System.currentTimeMillis());
         String fileName = "face_" + timeStamp + ".jpg";
         Path tempFilePath = Paths.get(tempDir, fileName);
-        
+
         try {
             // 写入临时文件
             Files.copy(faceImageFile.getInputStream(), tempFilePath);
             log.info("Saved uploaded image to temporary file: {}", tempFilePath);
-            
+
             // 提取人脸特征
             String featureJson = faceRecognitionUtil.extractFaceFeature(tempFilePath.toString());
             Map<String, Object> featureMap = objectMapper.readValue(featureJson, Map.class);
-            
+
             // 检查提取结果
             if (featureMap.containsKey("error")) {
                 throw new Exception(featureMap.get("error").toString());
@@ -169,7 +161,7 @@ public class FaceFeatureServiceImpl implements FaceFeatureService {
     private FaceFeature saveFaceFeature(String employeeNo, String featureJson) {
         // 查询现有特征
         FaceFeature faceFeature = faceFeatureRepository.findByEmployeeNo(employeeNo);
-        
+
         if (faceFeature != null) {
             // 更新现有特征
             faceFeature.setFeatureVector(featureJson);
@@ -183,7 +175,7 @@ public class FaceFeatureServiceImpl implements FaceFeatureService {
             faceFeature.setExtractionTime(LocalDateTime.now());
             faceFeature.setStatus(1);
         }
-        
+
         return faceFeatureRepository.save(faceFeature);
     }
 

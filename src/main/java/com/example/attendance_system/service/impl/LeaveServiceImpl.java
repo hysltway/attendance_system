@@ -40,24 +40,24 @@ public class LeaveServiceImpl implements LeaveService {
         if (optionalLeaveRecord.isEmpty()) {
             throw new IllegalArgumentException("请假记录不存在");
         }
-        
+
         LeaveRecord leaveRecord = optionalLeaveRecord.get();
         // 只能审批待审批状态的请假记录
         if (leaveRecord.getStatus() != 0) {
             throw new IllegalStateException("该请假申请已被处理，无法再次审批");
         }
-        
+
         // 防止管理员审批自己的请假记录
         if (leaveRecord.getEmployeeNo().equals(approverNo)) {
             throw new IllegalStateException("管理员不能审批自己的请假申请");
         }
-        
+
         // 更新审批信息
         leaveRecord.setStatus(status);
         leaveRecord.setApproverNo(approverNo);
         leaveRecord.setApprovalTime(LocalDateTime.now());
         leaveRecord.setApprovalRemark(remark);
-        
+
         return leaveRecordRepository.save(leaveRecord);
     }
 
@@ -65,47 +65,47 @@ public class LeaveServiceImpl implements LeaveService {
     public List<LeaveRecord> getEmployeeLeaveRecords(String employeeNo) {
         return leaveRecordRepository.findByEmployeeNo(employeeNo);
     }
-    
+
     @Override
     public Page<LeaveRecord> getEmployeeLeaveRecords(String employeeNo, Pageable pageable) {
         return leaveRecordRepository.findByEmployeeNo(employeeNo, pageable);
     }
-    
+
     @Override
     public Page<LeaveRecord> getEmployeeLeaveRecordsByStatus(String employeeNo, Integer status, Pageable pageable) {
         return leaveRecordRepository.findByEmployeeNoAndStatus(employeeNo, status, pageable);
     }
-    
+
     @Override
     public Page<LeaveRecord> getAllLeaveRecords(Pageable pageable) {
         return leaveRecordRepository.findAll(pageable);
     }
-    
+
     @Override
     public Page<LeaveRecord> getAllLeaveRecordsExcludeEmployee(String excludeEmployeeNo, Pageable pageable) {
         return leaveRecordRepository.findByEmployeeNoNot(excludeEmployeeNo, pageable);
     }
-    
+
     @Override
     public Page<LeaveRecord> getLeaveRecordsByStatus(Integer status, Pageable pageable) {
         return leaveRecordRepository.findByStatus(status, pageable);
     }
-    
+
     @Override
     public Page<LeaveRecord> getLeaveRecordsByStatusExcludeEmployee(Integer status, String excludeEmployeeNo, Pageable pageable) {
         return leaveRecordRepository.findByStatusAndEmployeeNoNot(status, excludeEmployeeNo, pageable);
     }
-    
+
     @Override
     public Page<LeaveRecord> getLeaveRecordsByEmployeeNo(String employeeNo, Pageable pageable) {
         return leaveRecordRepository.findByEmployeeNo(employeeNo, pageable);
     }
-    
+
     @Override
     public Page<LeaveRecord> getLeaveRecordsByEmployeeNoAndStatus(String employeeNo, Integer status, Pageable pageable) {
         return leaveRecordRepository.findByEmployeeNoAndStatus(employeeNo, status, pageable);
     }
-    
+
     @Override
     public boolean hasOverlappingLeave(String employeeNo, LocalDate startDate, LocalDate endDate) {
         return leaveRecordRepository.hasOverlappingLeave(employeeNo, startDate, endDate);
@@ -125,12 +125,12 @@ public class LeaveServiceImpl implements LeaveService {
     public List<String> getEmployeesOnLeave(LocalDate date) {
         return leaveRecordRepository.findEmployeesOnLeave(date);
     }
-    
+
     @Override
     public Page<LeaveRecord> getLeaveRecordsByEmployeeNameExcludeEmployee(String employeeName, String excludeEmployeeNo, Pageable pageable) {
         return leaveRecordRepository.findByEmployeeNameContainingAndEmployeeNoNot(employeeName, excludeEmployeeNo, pageable);
     }
-    
+
     @Override
     public Page<LeaveRecord> getLeaveRecordsByEmployeeNameAndStatusExcludeEmployee(String employeeName, Integer status, String excludeEmployeeNo, Pageable pageable) {
         return leaveRecordRepository.findByEmployeeNameContainingAndStatusAndEmployeeNoNot(employeeName, status, excludeEmployeeNo, pageable);

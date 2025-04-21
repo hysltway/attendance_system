@@ -20,20 +20,21 @@ public class HolidayInitializer {
 
     @Autowired
     private HolidayService holidayService;
-    
+
     /**
      * 创建命令行运行器，在应用启动时初始化节假日数据
      * 优化为只在数据库中没有当年节假日数据时才进行同步
+     *
      * @return CommandLineRunner实例
      */
     @Bean
     public CommandLineRunner initHolidayData() {
         return args -> {
             log.info("检查节假日数据...");
-            
+
             // 获取当前年份
             int currentYear = LocalDate.now().getYear();
-            
+
             try {
                 // 检查当前年份的节假日数据是否存在
                 List<Holiday> currentYearHolidays = holidayService.getHolidaysByYear(currentYear);
@@ -44,7 +45,7 @@ public class HolidayInitializer {
                 } else {
                     log.info("数据库中已存在{}年的{}个节假日数据，无需同步", currentYear, currentYearHolidays.size());
                 }
-                
+
                 log.info("节假日数据检查完成");
             } catch (Exception e) {
                 log.error("检查节假日数据失败", e);

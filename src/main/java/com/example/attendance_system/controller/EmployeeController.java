@@ -1,13 +1,6 @@
 package com.example.attendance_system.controller;
 
-import com.example.attendance_system.dto.AttendanceExceptionAppealDTO;
-import com.example.attendance_system.dto.AttendanceExceptionPageDTO;
-import com.example.attendance_system.dto.AttendanceRecordPageDTO;
-import com.example.attendance_system.dto.EmployeeRegistrationDTO;
-import com.example.attendance_system.dto.LoginDTO;
-import com.example.attendance_system.dto.LeaveRecordCreateDTO;
-import com.example.attendance_system.dto.LeaveRecordDTO;
-import com.example.attendance_system.dto.LeaveRecordPageDTO;
+import com.example.attendance_system.dto.*;
 import com.example.attendance_system.entity.Employee;
 import com.example.attendance_system.entity.FaceFeature;
 import com.example.attendance_system.entity.LeaveRecord;
@@ -30,11 +23,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,18 +42,19 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
-    
+
     @Autowired
     private AttendanceService attendanceService;
-    
+
     @Autowired
     private FaceFeatureService faceFeatureService;
-    
+
     @Autowired
     private LeaveService leaveService;
 
     /**
      * 员工注册接口
+     *
      * @param registrationDTO 员工注册信息
      * @return 注册结果
      */
@@ -76,31 +68,32 @@ public class EmployeeController {
     public ResponseEntity<?> registerEmployee(@RequestBody EmployeeRegistrationDTO registrationDTO) {
         try {
             Employee employee = employeeService.registerEmployee(registrationDTO);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "员工注册成功");
             response.put("employeeNo", employee.getEmployeeNo());
             response.put("employeeId", employee.getId());
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "员工注册失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
-    
+
     /**
      * 员工登录接口
+     *
      * @param loginDTO 登录信息
      * @return 登录结果
      */
@@ -114,7 +107,7 @@ public class EmployeeController {
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
         try {
             Employee employee = employeeService.login(loginDTO);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "登录成功");
@@ -122,28 +115,29 @@ public class EmployeeController {
             response.put("employeeId", employee.getId());
             response.put("name", employee.getName());
             response.put("isAdmin", employee.getIsAdmin());
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "登录失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
-    
+
     /**
      * 异常考勤信息分页查询接口
+     *
      * @param employeeNo 员工编号
-     * @param current 当前页码
-     * @param size 每页记录数
+     * @param current    当前页码
+     * @param size       每页记录数
      * @return 异常考勤信息分页结果
      */
     @Operation(summary = "异常考勤信息分页查询", description = "分页查询员工的异常考勤记录")
@@ -156,10 +150,10 @@ public class EmployeeController {
     public ResponseEntity<?> getExceptionRecords(
             @Parameter(description = "员工编号", required = true)
             @RequestParam String employeeNo,
-            
+
             @Parameter(description = "当前页码（从1开始）", required = true)
             @RequestParam Integer current,
-            
+
             @Parameter(description = "每页记录数", required = true)
             @RequestParam Integer size) {
         try {
@@ -170,7 +164,7 @@ public class EmployeeController {
             if (size < 1 || size > 100) {
                 throw new IllegalArgumentException("每页记录数必须在1-100之间");
             }
-            
+
             // 调用服务查询异常考勤记录
             AttendanceExceptionPageDTO result = attendanceService.getExceptionRecords(employeeNo, current, size);
             return ResponseEntity.ok(result);
@@ -178,19 +172,20 @@ public class EmployeeController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "查询异常考勤记录失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
-    
+
     /**
      * 提交异常考勤申诉
+     *
      * @param appealDTO 申诉信息，包含员工编号、异常记录ID和申诉理由
      * @return 申诉结果，包含处理状态和说明信息
      */
@@ -213,58 +208,59 @@ public class EmployeeController {
             if (appealDTO.getExplanation() == null || appealDTO.getExplanation().isEmpty()) {
                 throw new IllegalArgumentException("申诉说明不能为空");
             }
-            
+
             // 调用服务提交异常考勤申诉
             boolean result = attendanceService.submitExceptionAppeal(appealDTO);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", result);
-            
+
             if (result) {
                 response.put("message", "您的异常考勤申诉已成功提交，管理员将尽快审核处理。请关注申诉结果，如有紧急情况可联系人事部门。");
             } else {
                 response.put("message", "申诉提交失败，请稍后重试或直接联系人事部门处理");
             }
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "申诉提交失败：" + e.getMessage() + "，请检查您的输入后重试");
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "系统处理您的申诉请求时遇到问题：" + e.getMessage() + "，请稍后重试或联系系统管理员");
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 员工人脸录入/重新录入接口
+     *
      * @param employeeNo 员工编号
-     * @param faceImage 人脸图像文件（JPG格式）
+     * @param faceImage  人脸图像文件（JPG格式）
      * @return 录入结果
      */
     @Operation(summary = "员工人脸录入/重新录入", description = "支持已注册员工通过上传JPG文件录入或重新录入人脸图像，系统会根据employeeNo判断是首次录入还是覆盖更新")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "人脸录入/更新成功", 
-                    content = @Content(mediaType = "application/json", 
+            @ApiResponse(responseCode = "200", description = "人脸录入/更新成功",
+                    content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Object.class))),
-            @ApiResponse(responseCode = "400", description = "请求参数错误，如员工编号不存在或文件格式不正确", 
-                    content = @Content(mediaType = "application/json", 
+            @ApiResponse(responseCode = "400", description = "请求参数错误，如员工编号不存在或文件格式不正确",
+                    content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Object.class))),
-            @ApiResponse(responseCode = "500", description = "服务器内部错误，处理人脸录入时出现异常", 
-                    content = @Content(mediaType = "application/json", 
+            @ApiResponse(responseCode = "500", description = "服务器内部错误，处理人脸录入时出现异常",
+                    content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Object.class)))
     })
     @PostMapping(value = "/employee/info/register-or-update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> registerOrUpdateFace(
             @Parameter(description = "员工编号", required = true)
             @RequestParam String employeeNo,
-            
+
             @Parameter(description = "人脸图像文件（JPG格式）", required = true)
             @RequestPart MultipartFile faceImage) {
         try {
@@ -273,53 +269,54 @@ public class EmployeeController {
             if (employee == null) {
                 throw new IllegalArgumentException("员工编号不存在");
             }
-            
+
             // 检查文件
             if (faceImage == null || faceImage.isEmpty()) {
                 throw new IllegalArgumentException("人脸图像文件不能为空");
             }
-            
+
             // 检查文件类型
             String contentType = faceImage.getContentType();
             if (contentType == null || !contentType.startsWith("image/jpeg")) {
                 throw new IllegalArgumentException("只支持JPG/JPEG格式的图像文件");
             }
-            
+
             // 检查是否已有人脸信息
             boolean isUpdate = faceFeatureService.hasFaceFeature(employeeNo);
-            
+
             // 调用服务录入人脸特征
             FaceFeature faceFeature = faceFeatureService.enrollFaceFeatureByFile(employeeNo, faceImage);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", isUpdate ? "人脸信息更新成功" : "人脸信息首次录入成功");
             response.put("employeeNo", faceFeature.getEmployeeNo());
             response.put("extractionTime", faceFeature.getExtractionTime());
             response.put("isUpdate", isUpdate);
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "人脸录入失败：" + e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "人脸录入处理时遇到问题：" + e.getMessage() + "，请检查人脸图像是否清晰或重新尝试");
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 查询员工考勤数据接口
+     *
      * @param employeeNo 员工编号
-     * @param current 当前页码
-     * @param size 每页记录数
-     * @param timeRange 时间范围：1-当月, 2-上月, 3-本季度, 4-本年度, 其他值或不传-不限时间范围
+     * @param current    当前页码
+     * @param size       每页记录数
+     * @param timeRange  时间范围：1-当月, 2-上月, 3-本季度, 4-本年度, 其他值或不传-不限时间范围
      * @return 考勤数据分页结果
      */
     @Operation(summary = "查询员工考勤数据", description = "分页查询员工的所有考勤记录，包括正常和异常记录，支持时间范围筛选")
@@ -332,16 +329,15 @@ public class EmployeeController {
     public ResponseEntity<?> getAttendanceRecords(
             @Parameter(description = "员工编号", required = true)
             @RequestParam String employeeNo,
-            
+
             @Parameter(description = "当前页码（从1开始）", required = true)
             @RequestParam(defaultValue = "1") Integer current,
-            
+
             @Parameter(description = "每页记录数", required = true)
             @RequestParam(defaultValue = "10") Integer size,
-            
+
             @Parameter(description = "时间范围：1-当月, 2-上月, 3-本季度, 4-本年度, 不传-不限时间范围")
-            @RequestParam(required = false) Integer timeRange)
-    {
+            @RequestParam(required = false) Integer timeRange) {
         try {
             // 参数校验
             if (current < 1) {
@@ -350,7 +346,7 @@ public class EmployeeController {
             if (size < 1 || size > 100) {
                 throw new IllegalArgumentException("每页记录数必须在1-100之间");
             }
-            
+
             // 调用服务查询所有考勤记录
             AttendanceRecordPageDTO result = attendanceService.getAttendanceRecords(employeeNo, current, size, timeRange);
             return ResponseEntity.ok(result);
@@ -358,25 +354,26 @@ public class EmployeeController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "查询考勤记录失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 查询员工所有请假记录接口
+     *
      * @param employeeNo 员工编号
-     * @param current 当前页码
-     * @param size 每页记录数
-     * @param status 状态筛选（可选）
-     * @param sortBy 排序字段（可选）
-     * @param sortOrder 排序方式（可选）
+     * @param current    当前页码
+     * @param size       每页记录数
+     * @param status     状态筛选（可选）
+     * @param sortBy     排序字段（可选）
+     * @param sortOrder  排序方式（可选）
      * @return 请假记录分页结果
      */
     @Operation(summary = "查询员工所有请假记录", description = "员工本人查看其历史请假记录，包括已提交申请、已审批记录（批准/拒绝）、请假类型、时间范围及申请理由")
@@ -389,19 +386,19 @@ public class EmployeeController {
     public ResponseEntity<?> getEmployeeLeaveRecords(
             @Parameter(description = "员工编号", required = true)
             @RequestParam String employeeNo,
-            
+
             @Parameter(description = "当前页码（从1开始）", required = true)
             @RequestParam(defaultValue = "1") Integer current,
-            
+
             @Parameter(description = "每页记录数", required = true)
             @RequestParam(defaultValue = "10") Integer size,
-            
+
             @Parameter(description = "状态筛选：0-待审批，1-已批准，2-已拒绝")
             @RequestParam(required = false) Integer status,
-            
+
             @Parameter(description = "排序字段：createdTime-创建时间，startDate-开始日期")
             @RequestParam(defaultValue = "createdTime") String sortBy,
-            
+
             @Parameter(description = "排序方式：asc-升序，desc-降序")
             @RequestParam(defaultValue = "desc") String sortOrder) {
         try {
@@ -412,12 +409,12 @@ public class EmployeeController {
             if (size < 1 || size > 100) {
                 throw new IllegalArgumentException("每页记录数必须在1-100之间");
             }
-            
+
             // 创建排序对象
             Sort sort = Sort.by(Sort.Direction.fromString(sortOrder), sortBy);
             // 创建分页对象
             Pageable pageable = PageRequest.of(current - 1, size, sort);
-            
+
             // 获取请假记录
             Page<LeaveRecord> leavePage;
             if (status != null) {
@@ -425,12 +422,12 @@ public class EmployeeController {
             } else {
                 leavePage = leaveService.getEmployeeLeaveRecords(employeeNo, pageable);
             }
-            
+
             // 转换为DTO对象
             List<LeaveRecordDTO> records = leavePage.getContent().stream()
                     .map(this::convertToLeaveRecordDTO)
                     .collect(Collectors.toList());
-            
+
             // 构建分页结果
             LeaveRecordPageDTO resultPage = new LeaveRecordPageDTO();
             resultPage.setCurrent(current);
@@ -438,25 +435,26 @@ public class EmployeeController {
             resultPage.setTotal(leavePage.getTotalElements());
             resultPage.setPages(leavePage.getTotalPages());
             resultPage.setRecords(records);
-            
+
             return ResponseEntity.ok(resultPage);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "查询请假记录失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
-    
+
     /**
      * 员工提交请假申请接口
+     *
      * @param createDTO 请假申请信息
      * @return 申请结果
      */
@@ -482,27 +480,27 @@ public class EmployeeController {
             if (createDTO.getEndDate() == null) {
                 throw new IllegalArgumentException("请假结束日期不能为空");
             }
-            
+
             // 时间范围校验
             if (createDTO.getStartDate().isAfter(createDTO.getEndDate())) {
                 throw new IllegalArgumentException("请假开始日期不能晚于结束日期");
             }
-            
+
             // 请假日期不能是过去的日期
             if (createDTO.getStartDate().isBefore(LocalDate.now())) {
                 throw new IllegalArgumentException("请假开始日期不能是过去的日期");
             }
-            
+
             // 请假时长检查
             if (createDTO.getStartDate().until(createDTO.getEndDate().plusDays(1)).getDays() > 90) {
                 throw new IllegalArgumentException("单次请假时长最多不能超过90天");
             }
-            
+
             // 检查是否与已有请假时间重叠
             if (leaveService.hasOverlappingLeave(createDTO.getEmployeeNo(), createDTO.getStartDate(), createDTO.getEndDate())) {
                 throw new IllegalArgumentException("当前请假时间与已有请假记录时间重叠，请调整请假时间");
             }
-            
+
             // 创建请假记录
             LeaveRecord leaveRecord = new LeaveRecord();
             leaveRecord.setEmployeeNo(createDTO.getEmployeeNo());
@@ -510,33 +508,34 @@ public class EmployeeController {
             leaveRecord.setStartDate(createDTO.getStartDate());
             leaveRecord.setEndDate(createDTO.getEndDate());
             leaveRecord.setReason(createDTO.getReason());
-            
+
             // 提交请假申请
             LeaveRecord created = leaveService.submitLeaveApplication(leaveRecord);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "请假申请提交成功，等待管理员审批");
             response.put("leaveId", created.getId());
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "提交请假申请失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
-    
+
     /**
      * 将LeaveRecord实体转换为LeaveRecordDTO
+     *
      * @param record 请假记录实体
      * @return 请假记录DTO
      */
@@ -557,9 +556,10 @@ public class EmployeeController {
         dto.setCreatedTime(record.getCreatedTime());
         return dto;
     }
-    
+
     /**
      * 获取请假类型描述
+     *
      * @param leaveType 请假类型编号
      * @return 请假类型描述
      */
@@ -583,9 +583,10 @@ public class EmployeeController {
                 return "未知";
         }
     }
-    
+
     /**
      * 获取请假状态描述
+     *
      * @param status 请假状态编号
      * @return 请假状态描述
      */

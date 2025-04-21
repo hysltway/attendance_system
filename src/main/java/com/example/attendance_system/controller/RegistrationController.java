@@ -158,7 +158,7 @@ public class RegistrationController {
     public ResponseEntity<?> enrollFaceImage(
             @Parameter(description = "员工编号（必填）", required = true, example = "EMP2025001")
             @RequestParam("employeeNo") String employeeNo,
-            
+
             @Parameter(description = "人脸图像文件（必填），支持JPG、PNG格式，建议分辨率不低于640x480，人脸应清晰可见", required = true)
             @RequestParam("faceImageFile") MultipartFile faceImageFile) {
         try {

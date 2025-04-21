@@ -4,8 +4,6 @@ import com.example.attendance_system.entity.Employee;
 import com.example.attendance_system.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -32,9 +30,10 @@ public class AdminEmployeeController {
 
     /**
      * 获取员工列表（分页 + 条件搜索）
-     * @param current 当前页码（从1开始）
-     * @param size 每页显示条数
-     * @param name 员工姓名（模糊匹配）
+     *
+     * @param current    当前页码（从1开始）
+     * @param size       每页显示条数
+     * @param name       员工姓名（模糊匹配）
      * @param department 部门名称（精确或模糊匹配）
      * @return 员工列表分页结果
      */
@@ -50,16 +49,16 @@ public class AdminEmployeeController {
     public ResponseEntity<?> getEmployeeList(
             @Parameter(description = "当前页码，从1开始计数")
             @RequestParam(defaultValue = "1") Integer current,
-            
+
             @Parameter(description = "每页记录数")
             @RequestParam(defaultValue = "10") Integer size,
-            
+
             @Parameter(description = "员工姓名（模糊匹配）")
             @RequestParam(required = false) String name,
-            
+
             @Parameter(description = "部门名称（精确或模糊匹配）")
             @RequestParam(required = false) String department) {
-        
+
         try {
             // 参数校验
             if (current < 1) {
@@ -68,35 +67,36 @@ public class AdminEmployeeController {
             if (size < 1 || size > 100) {
                 throw new IllegalArgumentException("每页记录数必须在1-100之间");
             }
-            
+
             // 调用服务查询员工列表
             Page<Employee> employeePage = employeeService.getEmployeeListPage(current, size, name, department);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("total", employeePage.getTotalElements());
             response.put("pages", employeePage.getTotalPages());
             response.put("current", current);
             response.put("records", employeePage.getContent());
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "获取员工列表失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 管理员编辑员工信息
+     *
      * @param employee 员工信息
      * @return 更新结果
      */
@@ -115,33 +115,34 @@ public class AdminEmployeeController {
             if (employee.getEmployeeNo() == null || employee.getEmployeeNo().isEmpty()) {
                 throw new IllegalArgumentException("员工编号不能为空");
             }
-            
+
             // 调用服务更新员工信息
             Employee updatedEmployee = employeeService.updateEmployee(employee);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "更新员工信息成功");
             response.put("employee", updatedEmployee);
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "更新员工信息失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 管理员删除员工
+     *
      * @param employeeId 员工ID
      * @return 删除结果
      */
@@ -162,37 +163,38 @@ public class AdminEmployeeController {
             if (employeeId == null || employeeId.isEmpty()) {
                 throw new IllegalArgumentException("员工ID不能为空");
             }
-            
+
             // 调用服务删除员工
             boolean result = employeeService.deleteEmployee(employeeId);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", result);
-            
+
             if (result) {
                 response.put("message", "员工删除成功");
             } else {
                 response.put("message", "员工删除失败");
             }
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "删除员工失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 管理员手动添加员工
+     *
      * @param employee 员工信息
      * @return 创建结果
      */
@@ -211,28 +213,28 @@ public class AdminEmployeeController {
             if (employee.getName() == null || employee.getName().isEmpty()) {
                 throw new IllegalArgumentException("员工姓名不能为空");
             }
-            
+
             // 调用服务创建员工
             Employee createdEmployee = employeeService.createEmployee(employee);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "创建员工成功");
             response.put("employeeNo", createdEmployee.getEmployeeNo());
             response.put("employeeId", createdEmployee.getId());
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "创建员工失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }

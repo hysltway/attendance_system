@@ -20,7 +20,7 @@ public class AnnouncementStatusUpdateTask {
 
     @Autowired
     private AnnouncementRepository announcementRepository;
-    
+
     /**
      * 定时发布公告（每分钟执行一次）
      */
@@ -29,10 +29,10 @@ public class AnnouncementStatusUpdateTask {
     public void publishScheduledAnnouncements() {
         LocalDateTime now = LocalDateTime.now();
         log.info("执行定时发布公告任务，当前时间：{}", now);
-        
+
         // 查找待发布且发布时间已到的公告
         List<Announcement> announcements = announcementRepository.findByStatusAndIsDeletedOrderByCreatedTimeDesc("draft", 0);
-        
+
         for (Announcement announcement : announcements) {
             if (announcement.getPublishTime() != null && announcement.getPublishTime().isBefore(now)) {
                 announcement.setStatus("published");
@@ -41,7 +41,7 @@ public class AnnouncementStatusUpdateTask {
             }
         }
     }
-    
+
     /**
      * 更新过期公告（每小时执行一次）
      */
@@ -50,10 +50,10 @@ public class AnnouncementStatusUpdateTask {
     public void expireAnnouncements() {
         LocalDateTime now = LocalDateTime.now();
         log.info("执行过期公告检查任务，当前时间：{}", now);
-        
+
         // 查找已发布且有效期已过的公告
         List<Announcement> announcements = announcementRepository.findByStatusAndIsDeletedOrderByCreatedTimeDesc("published", 0);
-        
+
         for (Announcement announcement : announcements) {
             if (announcement.getValidTo().isBefore(now)) {
                 announcement.setStatus("expired");

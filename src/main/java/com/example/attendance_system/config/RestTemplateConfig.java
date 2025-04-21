@@ -12,6 +12,7 @@ public class RestTemplateConfig {
 
     /**
      * 配置RestTemplate Bean
+     *
      * @return RestTemplate实例
      */
     @Bean

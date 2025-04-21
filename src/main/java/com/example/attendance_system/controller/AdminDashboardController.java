@@ -27,9 +27,10 @@ public class AdminDashboardController {
 
     @Autowired
     private AdminDashboardService adminDashboardService;
-    
+
     /**
      * 获取管理员控制台数据接口
+     *
      * @param timeGranularity 时间粒度：1-日, 2-周, 3-月，默认为1
      * @return 管理员仪表盘数据
      */
@@ -50,13 +51,13 @@ public class AdminDashboardController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "获取仪表盘数据失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }

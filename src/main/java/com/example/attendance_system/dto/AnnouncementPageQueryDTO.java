@@ -14,31 +14,31 @@ public class AnnouncementPageQueryDTO {
      */
     @Schema(description = "公告标题关键词（模糊匹配）", example = "通知")
     private String title;
-    
+
     /**
      * 公告状态：published=已发布，draft=待发布，expired=已过期
      */
     @Schema(description = "公告状态：published=已发布，draft=待发布，expired=已过期", example = "published")
     private String status;
-    
+
     /**
      * 发布时间开始（yyyy-MM-dd）
      */
     @Schema(description = "发布时间开始（yyyy-MM-dd）", example = "2025-04-01")
     private String startDate;
-    
+
     /**
      * 发布时间结束（yyyy-MM-dd）
      */
     @Schema(description = "发布时间结束（yyyy-MM-dd）", example = "2025-04-30")
     private String endDate;
-    
+
     /**
      * 当前页码（从1开始）
      */
     @Schema(description = "当前页码（从1开始）", example = "1")
     private Integer current = 1;
-    
+
     /**
      * 每页条数
      */
