@@ -65,4 +65,10 @@ public class Department {
     @UpdateTimestamp
     @Column(name = "updated_time")
     private LocalDateTime updatedTime;
+    
+    /**
+     * 部门员工数量（非持久化字段，不映射到数据库）
+     */
+    @Transient
+    private Integer employeeCount;
 } 

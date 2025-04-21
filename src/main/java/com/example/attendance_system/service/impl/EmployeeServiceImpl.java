@@ -5,8 +5,10 @@ import com.example.attendance_system.dto.EmployeeInfoUpdateDTO;
 import com.example.attendance_system.dto.EmployeeInfoUpdatePageDTO;
 import com.example.attendance_system.dto.EmployeeRegistrationDTO;
 import com.example.attendance_system.dto.LoginDTO;
+import com.example.attendance_system.entity.Department;
 import com.example.attendance_system.entity.Employee;
 import com.example.attendance_system.entity.EmployeeInfoUpdateRequest;
+import com.example.attendance_system.repository.DepartmentRepository;
 import com.example.attendance_system.repository.EmployeeInfoUpdateRequestRepository;
 import com.example.attendance_system.repository.EmployeeRepository;
 import com.example.attendance_system.service.EmployeeService;
@@ -22,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -31,6 +34,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     
     @Autowired
     private EmployeeInfoUpdateRequestRepository employeeInfoUpdateRequestRepository;
+    
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
     @Override
     @Transactional
@@ -313,5 +319,196 @@ public class EmployeeServiceImpl implements EmployeeService {
         int randomNumber = random.nextInt(10000);
         
         return String.format("%02d%02d%04d", month, year, randomNumber);
+    }
+
+    /**
+     * 分页查询员工列表
+     * @param current 当前页码
+     * @param size 每页记录数
+     * @param name 员工姓名（模糊匹配）
+     * @param department 部门名称（精确或模糊匹配）
+     * @return 员工分页列表
+     */
+    @Override
+    public Page<Employee> getEmployeeListPage(Integer current, Integer size, String name, String department) {
+        // 创建分页对象
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
+        // 查询条件
+        Page<Employee> employeePage;
+        
+        if ((name == null || name.isEmpty()) && (department == null || department.isEmpty())) {
+            // 无查询条件，查询所有员工
+            employeePage = employeeRepository.findAll(pageable);
+        } else if (department == null || department.isEmpty()) {
+            // 仅按姓名查询
+            employeePage = employeeRepository.findByNameContaining(name, pageable);
+        } else if (name == null || name.isEmpty()) {
+            // 仅按部门查询
+            // 先查询部门信息
+            List<Department> departments = departmentRepository.findByNameContaining(department);
+            if (departments.isEmpty()) {
+                return Page.empty(pageable);
+            }
+            // 获取部门ID列表
+            List<Long> departmentIds = departments.stream()
+                    .map(Department::getId)
+                    .collect(Collectors.toList());
+            // 按部门ID查询员工
+            employeePage = employeeRepository.findByDepartmentIdIn(departmentIds, pageable);
+        } else {
+            // 同时按姓名和部门查询
+            // 先查询部门信息
+            List<Department> departments = departmentRepository.findByNameContaining(department);
+            if (departments.isEmpty()) {
+                return Page.empty(pageable);
+            }
+            // 获取部门ID列表
+            List<Long> departmentIds = departments.stream()
+                    .map(Department::getId)
+                    .collect(Collectors.toList());
+            // 按姓名和部门ID查询员工
+            employeePage = employeeRepository.findByNameContainingAndDepartmentIdIn(name, departmentIds, pageable);
+        }
+        
+        // 加载员工关联的部门信息
+        employeePage.getContent().forEach(employee -> {
+            if (employee.getDepartmentId() != null) {
+                Department dept = departmentRepository.findById(employee.getDepartmentId()).orElse(null);
+                employee.setDepartment(dept);
+            }
+        });
+        
+        return employeePage;
+    }
+
+    /**
+     * 更新员工信息
+     * @param employee 员工信息
+     * @return 更新后的员工信息
+     */
+    @Override
+    public Employee updateEmployee(Employee employee) {
+        // 查询员工是否存在
+        Employee existingEmployee = employeeRepository.findByEmployeeNo(employee.getEmployeeNo());
+        if (existingEmployee == null) {
+            throw new IllegalArgumentException("员工不存在");
+        }
+        
+        // 更新员工基本信息
+        existingEmployee.setName(employee.getName());
+        existingEmployee.setPhoneNumber(employee.getPhoneNumber());
+        existingEmployee.setEmail(employee.getEmail());
+        existingEmployee.setPosition(employee.getPosition());
+        existingEmployee.setDepartmentId(employee.getDepartmentId());
+        existingEmployee.setGender(employee.getGender());
+        existingEmployee.setStatus(employee.getStatus());
+        existingEmployee.setIsAdmin(employee.getIsAdmin());
+        // 密码不为空时才更新密码
+        if (employee.getPassword() != null && !employee.getPassword().isEmpty()) {
+            // 实际项目中应加密存储密码
+            existingEmployee.setPassword(employee.getPassword());
+        }
+        
+        // 保存更新后的员工信息
+        return employeeRepository.save(existingEmployee);
+    }
+
+    /**
+     * 删除员工（逻辑删除）
+     * @param employeeId 员工ID
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean deleteEmployee(String employeeId) {
+        try {
+            // 解析员工ID
+            Long id = Long.parseLong(employeeId);
+            
+            // 查询员工是否存在
+            Employee employee = employeeRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("员工不存在"));
+            
+            // 逻辑删除员工（设置状态为离职）
+            employee.setStatus(0);
+            employeeRepository.save(employee);
+            
+            return true;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("员工ID格式不正确");
+        }
+    }
+
+    /**
+     * 创建员工
+     * @param employee 员工信息
+     * @return 创建后的员工信息
+     */
+    @Override
+    public Employee createEmployee(Employee employee) {
+        // 校验必填字段
+        if (employee.getName() == null || employee.getName().isEmpty()) {
+            throw new IllegalArgumentException("员工姓名不能为空");
+        }
+        
+        // 校验手机号和邮箱是否已存在
+        if (employee.getPhoneNumber() != null && !employee.getPhoneNumber().isEmpty()) {
+            if (employeeRepository.existsByPhoneNumber(employee.getPhoneNumber())) {
+                throw new IllegalArgumentException("手机号已存在");
+            }
+        }
+        if (employee.getEmail() != null && !employee.getEmail().isEmpty()) {
+            if (employeeRepository.existsByEmail(employee.getEmail())) {
+                throw new IllegalArgumentException("邮箱已存在");
+            }
+        }
+        
+        // 生成员工编号
+        if (employee.getEmployeeNo() == null || employee.getEmployeeNo().isEmpty()) {
+            employee.setEmployeeNo(generateEmployeeNo(LocalDate.now()));
+        }
+        
+        // 设置默认入职日期（如果未设置）
+        if (employee.getHireDate() == null) {
+            employee.setHireDate(LocalDate.now());
+        }
+        
+        // 设置默认状态
+        employee.setStatus(1); // 在职
+        
+        // 设置默认密码（如果未设置）
+        if (employee.getPassword() == null || employee.getPassword().isEmpty()) {
+            // 实际项目中应使用加密存储密码，这里仅作示例
+            employee.setPassword("123456");
+        }
+        
+        // 保存员工信息
+        return employeeRepository.save(employee);
+    }
+
+    /**
+     * 根据部门ID查询员工列表
+     * @param departmentId 部门ID
+     * @param current 当前页码
+     * @param size 每页记录数
+     * @return 员工分页列表
+     */
+    @Override
+    public Page<Employee> getEmployeesByDepartmentId(Long departmentId, Integer current, Integer size) {
+        // 创建分页对象
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
+        // 查询指定部门的员工
+        Page<Employee> employeePage = employeeRepository.findByDepartmentId(departmentId, pageable);
+        
+        // 同时加载部门信息
+        employeePage.getContent().forEach(employee -> {
+            if (employee.getDepartmentId() != null) {
+                Department dept = departmentRepository.findById(employee.getDepartmentId()).orElse(null);
+                employee.setDepartment(dept);
+            }
+        });
+        
+        return employeePage;
     }
 } 

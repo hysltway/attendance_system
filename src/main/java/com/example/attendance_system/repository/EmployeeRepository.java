@@ -1,6 +1,8 @@
 package com.example.attendance_system.repository;
 
 import com.example.attendance_system.entity.Employee;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -58,4 +60,44 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @return 匹配的员工列表
      */
     List<Employee> findByNameContaining(String name);
+    
+    /**
+     * 根据员工姓名模糊查询（分页）
+     * @param name 员工姓名（部分）
+     * @param pageable 分页参数
+     * @return 匹配的员工分页列表
+     */
+    Page<Employee> findByNameContaining(String name, Pageable pageable);
+    
+    /**
+     * 根据部门ID列表查询员工（分页）
+     * @param departmentIds 部门ID列表
+     * @param pageable 分页参数
+     * @return 匹配的员工分页列表
+     */
+    Page<Employee> findByDepartmentIdIn(List<Long> departmentIds, Pageable pageable);
+    
+    /**
+     * 根据员工姓名和部门ID列表查询员工（分页）
+     * @param name 员工姓名（部分）
+     * @param departmentIds 部门ID列表
+     * @param pageable 分页参数
+     * @return 匹配的员工分页列表
+     */
+    Page<Employee> findByNameContainingAndDepartmentIdIn(String name, List<Long> departmentIds, Pageable pageable);
+    
+    /**
+     * 统计指定部门下的员工数量
+     * @param departmentId 部门ID
+     * @return 员工数量
+     */
+    int countByDepartmentId(Long departmentId);
+    
+    /**
+     * 根据部门ID查询员工列表（分页）
+     * @param departmentId 部门ID
+     * @param pageable 分页参数
+     * @return 匹配的员工分页列表
+     */
+    Page<Employee> findByDepartmentId(Long departmentId, Pageable pageable);
 } 
