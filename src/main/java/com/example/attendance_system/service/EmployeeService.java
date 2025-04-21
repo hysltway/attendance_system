@@ -113,4 +113,13 @@ public interface EmployeeService {
      * @return 创建后的员工信息
      */
     Employee createEmployee(Employee employee);
+    
+    /**
+     * 根据部门ID查询员工列表
+     * @param departmentId 部门ID
+     * @param current 当前页码
+     * @param size 每页记录数
+     * @return 员工分页列表
+     */
+    Page<Employee> getEmployeesByDepartmentId(Long departmentId, Integer current, Integer size);
 } 

@@ -485,4 +485,30 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 保存员工信息
         return employeeRepository.save(employee);
     }
+
+    /**
+     * 根据部门ID查询员工列表
+     * @param departmentId 部门ID
+     * @param current 当前页码
+     * @param size 每页记录数
+     * @return 员工分页列表
+     */
+    @Override
+    public Page<Employee> getEmployeesByDepartmentId(Long departmentId, Integer current, Integer size) {
+        // 创建分页对象
+        Pageable pageable = PageRequest.of(current - 1, size);
+        
+        // 查询指定部门的员工
+        Page<Employee> employeePage = employeeRepository.findByDepartmentId(departmentId, pageable);
+        
+        // 同时加载部门信息
+        employeePage.getContent().forEach(employee -> {
+            if (employee.getDepartmentId() != null) {
+                Department dept = departmentRepository.findById(employee.getDepartmentId()).orElse(null);
+                employee.setDepartment(dept);
+            }
+        });
+        
+        return employeePage;
+    }
 } 
