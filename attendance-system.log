@@ -1,0 +1,871 @@
+2025-04-21 17:36:50 [restartedMain] INFO  c.e.a.AttendanceSystemApplication - Starting AttendanceSystemApplication using Java 17.0.13 with PID 31392 (D:\Users\21776\Desktop\考勤系统\attendance_system\target\classes started by 21776 in D:\Users\21776\Desktop\考勤系统\attendance_system)
+2025-04-21 17:36:50 [restartedMain] DEBUG c.e.a.AttendanceSystemApplication - Running with Spring Boot v3.4.4, Spring v6.2.5
+2025-04-21 17:36:50 [restartedMain] INFO  c.e.a.AttendanceSystemApplication - No active profile set, falling back to 1 default profile: "default"
+2025-04-21 17:36:50 [restartedMain] INFO  o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-21 17:36:50 [restartedMain] INFO  o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-21 17:36:51 [restartedMain] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 17:36:51 [restartedMain] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 57 ms. Found 7 JPA repository interfaces.
+2025-04-21 17:36:52 [restartedMain] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-04-21 17:36:52 [restartedMain] INFO  o.a.c.core.AprLifecycleListener - An older version [1.3.1] of the Apache Tomcat Native library is installed, while Tomcat recommends a minimum version of [2.0.5]
+2025-04-21 17:36:52 [restartedMain] INFO  o.a.c.core.AprLifecycleListener - Loaded Apache Tomcat Native library [1.3.1] using APR version [1.7.4].
+2025-04-21 17:36:52 [restartedMain] INFO  o.a.c.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.0.14 4 Jun 2024]
+2025-04-21 17:36:52 [restartedMain] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-04-21 17:36:52 [restartedMain] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-04-21 17:36:52 [restartedMain] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-04-21 17:36:52 [restartedMain] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2259 ms
+2025-04-21 17:36:52 [restartedMain] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 17:36:52 [restartedMain] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.11.Final
+2025-04-21 17:36:53 [restartedMain] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-04-21 17:36:53 [restartedMain] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-04-21 17:36:53 [restartedMain] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-04-21 17:36:53 [restartedMain] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1597992b
+2025-04-21 17:36:53 [restartedMain] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-04-21 17:36:53 [restartedMain] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-04-21 17:36:53 [restartedMain] WARN  org.hibernate.orm.deprecation - HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2025-04-21 17:36:53 [restartedMain] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-04-21 17:36:54 [restartedMain] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-04-21 17:36:54 [restartedMain] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 17:36:54 [restartedMain] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-04-21 17:36:56 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 17:36:56 [restartedMain] INFO  o.s.v.b.OptionalValidatorFactoryBean - Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-04-21 17:36:56 [restartedMain] INFO  o.s.b.d.a.OptionalLiveReloadServer - LiveReload server is running on port 35729
+2025-04-21 17:36:56 [restartedMain] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2025-04-21 17:36:57 [restartedMain] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.AttendanceSystemApplication - Started AttendanceSystemApplication in 7.239 seconds (process running for 8.311)
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.HolidayInitializer - 检查节假日数据...
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        h1_0.id,
+        h1_0.created_time,
+        h1_0.date,
+        h1_0.holiday_date,
+        h1_0.name,
+        h1_0.name_cn,
+        h1_0.name_en,
+        h1_0.region,
+        h1_0.remark,
+        h1_0.type,
+        h1_0.updated_time,
+        h1_0.year 
+    from
+        t_holiday h1_0 
+    where
+        h1_0.year=?
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.HolidayInitializer - 数据库中已存在2025年的33个节假日数据，无需同步
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.HolidayInitializer - 节假日数据检查完成
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 开始检查缺失的旷工记录，检查天数: 7...
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='public_holiday'
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='transfer_workday'
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 检查2025-04-14的缺失旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        e1_0.id,
+        e1_0.created_time,
+        e1_0.department_id,
+        e1_0.email,
+        e1_0.employee_no,
+        e1_0.gender,
+        e1_0.hire_date,
+        e1_0.is_admin,
+        e1_0.name,
+        e1_0.password,
+        e1_0.phone_number,
+        e1_0.position,
+        e1_0.status,
+        e1_0.updated_time 
+    from
+        t_employee e1_0 
+    where
+        e1_0.status=?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        distinct lr1_0.employee_no 
+    from
+        t_leave_record lr1_0 
+    where
+        lr1_0.status=1 
+        and ? between lr1_0.start_date and lr1_0.end_date
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 日期2025-04-14：没有需要补充的旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='public_holiday'
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='transfer_workday'
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 检查2025-04-15的缺失旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        e1_0.id,
+        e1_0.created_time,
+        e1_0.department_id,
+        e1_0.email,
+        e1_0.employee_no,
+        e1_0.gender,
+        e1_0.hire_date,
+        e1_0.is_admin,
+        e1_0.name,
+        e1_0.password,
+        e1_0.phone_number,
+        e1_0.position,
+        e1_0.status,
+        e1_0.updated_time 
+    from
+        t_employee e1_0 
+    where
+        e1_0.status=?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        distinct lr1_0.employee_no 
+    from
+        t_leave_record lr1_0 
+    where
+        lr1_0.status=1 
+        and ? between lr1_0.start_date and lr1_0.end_date
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 日期2025-04-15：没有需要补充的旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='public_holiday'
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='transfer_workday'
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 检查2025-04-16的缺失旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        e1_0.id,
+        e1_0.created_time,
+        e1_0.department_id,
+        e1_0.email,
+        e1_0.employee_no,
+        e1_0.gender,
+        e1_0.hire_date,
+        e1_0.is_admin,
+        e1_0.name,
+        e1_0.password,
+        e1_0.phone_number,
+        e1_0.position,
+        e1_0.status,
+        e1_0.updated_time 
+    from
+        t_employee e1_0 
+    where
+        e1_0.status=?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        distinct lr1_0.employee_no 
+    from
+        t_leave_record lr1_0 
+    where
+        lr1_0.status=1 
+        and ? between lr1_0.start_date and lr1_0.end_date
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 日期2025-04-16：没有需要补充的旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='public_holiday'
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='transfer_workday'
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 检查2025-04-17的缺失旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        e1_0.id,
+        e1_0.created_time,
+        e1_0.department_id,
+        e1_0.email,
+        e1_0.employee_no,
+        e1_0.gender,
+        e1_0.hire_date,
+        e1_0.is_admin,
+        e1_0.name,
+        e1_0.password,
+        e1_0.phone_number,
+        e1_0.position,
+        e1_0.status,
+        e1_0.updated_time 
+    from
+        t_employee e1_0 
+    where
+        e1_0.status=?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        distinct lr1_0.employee_no 
+    from
+        t_leave_record lr1_0 
+    where
+        lr1_0.status=1 
+        and ? between lr1_0.start_date and lr1_0.end_date
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 日期2025-04-17：没有需要补充的旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='public_holiday'
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='transfer_workday'
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 检查2025-04-18的缺失旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        e1_0.id,
+        e1_0.created_time,
+        e1_0.department_id,
+        e1_0.email,
+        e1_0.employee_no,
+        e1_0.gender,
+        e1_0.hire_date,
+        e1_0.is_admin,
+        e1_0.name,
+        e1_0.password,
+        e1_0.phone_number,
+        e1_0.position,
+        e1_0.status,
+        e1_0.updated_time 
+    from
+        t_employee e1_0 
+    where
+        e1_0.status=?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        distinct lr1_0.employee_no 
+    from
+        t_leave_record lr1_0 
+    where
+        lr1_0.status=1 
+        and ? between lr1_0.start_date and lr1_0.end_date
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        count(ar1_0.id) 
+    from
+        t_attendance_record ar1_0 
+    where
+        ar1_0.employee_no=? 
+        and ar1_0.check_time between ? and ?
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 日期2025-04-18：没有需要补充的旷工记录
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='public_holiday'
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='transfer_workday'
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 2025-04-19不是工作日，跳过旷工检查
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='public_holiday'
+2025-04-21 17:36:57 [restartedMain] DEBUG org.hibernate.SQL - 
+    select
+        case 
+            when count(h1_0.id)>0 
+                then 1 
+            else 0 
+    end 
+from
+    t_holiday h1_0 
+where
+    h1_0.holiday_date=? 
+    and h1_0.type='transfer_workday'
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 2025-04-20不是工作日，跳过旷工检查
+2025-04-21 17:36:57 [restartedMain] INFO  c.e.a.config.AttendanceInitializer - 缺失旷工记录检查完成
+2025-04-21 17:39:03 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 88 class path changes (0 additions, 88 deletions, 0 modifications)
+2025-04-21 17:39:03 [Thread-5] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-04-21 17:39:04 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-04-21 17:39:04 [Thread-5] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 17:39:04 [Thread-5] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-04-21 17:39:04 [Thread-5] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-04-21 17:39:04 [restartedMain] INFO  c.e.a.AttendanceSystemApplication - Starting AttendanceSystemApplication using Java 17.0.13 with PID 31392 (D:\Users\21776\Desktop\考勤系统\attendance_system\target\classes started by 21776 in D:\Users\21776\Desktop\考勤系统\attendance_system)
+2025-04-21 17:39:04 [restartedMain] DEBUG c.e.a.AttendanceSystemApplication - Running with Spring Boot v3.4.4, Spring v6.2.5
+2025-04-21 17:39:04 [restartedMain] INFO  c.e.a.AttendanceSystemApplication - No active profile set, falling back to 1 default profile: "default"
+2025-04-21 17:39:04 [restartedMain] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-21 17:39:04 [restartedMain] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 1 ms. Found 0 JPA repository interfaces.
+2025-04-21 17:39:04 [restartedMain] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-04-21 17:39:04 [restartedMain] INFO  o.a.c.core.AprLifecycleListener - An older version [1.3.1] of the Apache Tomcat Native library is installed, while Tomcat recommends a minimum version of [2.0.5]
+2025-04-21 17:39:04 [restartedMain] INFO  o.a.c.core.AprLifecycleListener - Loaded Apache Tomcat Native library [1.3.1] using APR version [1.7.4].
+2025-04-21 17:39:04 [restartedMain] INFO  o.a.c.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.0.14 4 Jun 2024]
+2025-04-21 17:39:04 [restartedMain] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-04-21 17:39:04 [restartedMain] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-04-21 17:39:04 [restartedMain] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-04-21 17:39:04 [restartedMain] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 461 ms
+2025-04-21 17:39:04 [restartedMain] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-21 17:39:04 [restartedMain] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-04-21 17:39:04 [restartedMain] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-04-21 17:39:04 [restartedMain] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Starting...
+2025-04-21 17:39:04 [restartedMain] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Added connection com.mysql.cj.jdbc.ConnectionImpl@50bfaa4d
+2025-04-21 17:39:04 [restartedMain] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Start completed.
+2025-04-21 17:39:04 [restartedMain] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-04-21 17:39:04 [restartedMain] WARN  org.hibernate.orm.deprecation - HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2025-04-21 17:39:04 [restartedMain] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-04-21 17:39:04 [restartedMain] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-04-21 17:39:04 [restartedMain] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 17:39:04 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-21 17:39:05 [restartedMain] INFO  o.s.v.b.OptionalValidatorFactoryBean - Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-04-21 17:39:05 [restartedMain] INFO  o.s.b.d.a.OptionalLiveReloadServer - LiveReload server is running on port 35729
+2025-04-21 17:39:05 [restartedMain] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint beneath base path '/actuator'
+2025-04-21 17:39:05 [restartedMain] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-04-21 17:39:05 [restartedMain] INFO  c.e.a.AttendanceSystemApplication - Started AttendanceSystemApplication in 1.103 seconds (process running for 136.663)
+2025-04-21 17:39:05 [restartedMain] INFO  o.s.b.d.a.ConditionEvaluationDeltaLoggingListener - Condition evaluation delta:
+
+
+==========================
+CONDITION EVALUATION DELTA
+==========================
+
+
+Positive matches:
+-----------------
+
+    None
+
+
+Negative matches:
+-----------------
+
+   TaskSchedulingAutoConfiguration#scheduledBeanLazyInitializationExcludeFilter:
+      Did not match:
+         - @ConditionalOnBean (names: org.springframework.context.annotation.internalScheduledAnnotationProcessor; SearchStrategy: all) did not find any beans named org.springframework.context.annotation.internalScheduledAnnotationProcessor (OnBeanCondition)
+
+   TaskSchedulingConfigurations.TaskSchedulerConfiguration:
+      Did not match:
+         - @ConditionalOnBean (names: org.springframework.context.annotation.internalScheduledAnnotationProcessor; SearchStrategy: all) did not find any beans named org.springframework.context.annotation.internalScheduledAnnotationProcessor (OnBeanCondition)
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+
+2025-04-21 17:39:16 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-04-21 17:39:17 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-04-21 17:39:17 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-21 17:39:17 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+2025-04-21 17:39:17 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
