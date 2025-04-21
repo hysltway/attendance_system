@@ -153,14 +153,18 @@ public class EmployeeInfoController {
     /**
      * 查询所有待审核的员工信息更新请求（管理员接口）
      * @param adminNo 当前管理员编号（用于过滤自己的申请）
-     * @return 待审核请求列表
+     * @param employeeNo 员工编号筛选（可选）
+     * @param name 员工姓名筛选（可选）
+     * @param current 当前页码，从1开始计数（可选，默认1）
+     * @param size 每页记录数（可选，默认10）
+     * @return 待审核请求分页结果
      */
-    @Operation(summary = "查询待审核请求", description = "管理员查询所有待审核的员工信息更新申请，自动过滤管理员自己的申请")
+    @Operation(summary = "查询待审核请求", description = "管理员查询所有待审核的员工信息更新申请，支持分页，自动过滤管理员自己的申请")
     @SecurityRequirement(name = "bearer-jwt")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "查询成功", 
                     content = @Content(mediaType = "application/json", 
-                            array = @ArraySchema(schema = @Schema(implementation = EmployeeInfoUpdateRequest.class)))),
+                            schema = @Schema(implementation = Object.class))),
             @ApiResponse(responseCode = "403", description = "权限不足", 
                     content = @Content(mediaType = "application/json", 
                             schema = @Schema(implementation = Object.class))),
@@ -171,15 +175,28 @@ public class EmployeeInfoController {
     @GetMapping("/info/update/pending")
     public ResponseEntity<?> getPendingInfoUpdateRequests(
             @Parameter(description = "当前管理员编号", required = true)
-            @RequestParam String adminNo) {
+            @RequestParam String adminNo,
+            
+            @Parameter(description = "员工编号筛选（可选）")
+            @RequestParam(required = false) String employeeNo,
+            
+            @Parameter(description = "员工姓名筛选（可选）")
+            @RequestParam(required = false) String name,
+            
+            @Parameter(description = "当前页码，从1开始")
+            @RequestParam(defaultValue = "1") Integer current,
+            
+            @Parameter(description = "每页记录数")
+            @RequestParam(defaultValue = "10") Integer size) {
         try {
             if (adminNo == null || adminNo.isEmpty()) {
                 throw new IllegalArgumentException("管理员编号不能为空");
             }
             
-            List<EmployeeInfoUpdateRequest> requests = employeeService.getPendingInfoUpdateRequestsExcludeEmployee(adminNo);
-            
-            return ResponseEntity.ok(requests);
+            // 使用分页查询
+            return ResponseEntity.ok(
+                    employeeService.getPendingInfoUpdateRequestsExcludeEmployeePage(adminNo, employeeNo, name, current, size)
+            );
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);

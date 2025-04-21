@@ -103,6 +103,8 @@ app:
     work-hours: 8
     # 考勤异常检查的提前天数
     check-days-ahead: 7
+    # 缺失旷工记录检查天数（系统启动时向前检查的天数）
+    missing-records-check-days: 7
     # 人脸识别相关配置
     face:
       # 相似度阈值

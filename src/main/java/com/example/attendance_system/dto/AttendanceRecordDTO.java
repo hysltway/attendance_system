@@ -31,6 +31,11 @@ public class AttendanceRecordDTO {
     private LocalDateTime checkTime;
     
     /**
+     * 打卡时间（格式化后的字符串，格式：yyyy-MM-dd HH:mm）
+     */
+    private String checkTimeStr;
+    
+    /**
      * 打卡类型：1-上班打卡，2-下班打卡，3-外出打卡，4-返回打卡
      */
     private Integer checkType;

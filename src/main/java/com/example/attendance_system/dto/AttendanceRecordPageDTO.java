@@ -36,6 +36,31 @@ public class AttendanceRecordPageDTO {
     private Integer pages;
     
     /**
+     * 考勤统计 - 出勤天数
+     */
+    private Integer attendanceDays;
+    
+    /**
+     * 考勤统计 - 迟到次数
+     */
+    private Integer lateTimes;
+    
+    /**
+     * 考勤统计 - 早退次数
+     */
+    private Integer earlyLeaveTimes;
+    
+    /**
+     * 考勤统计 - 缺勤天数
+     */
+    private Integer absentDays;
+    
+    /**
+     * 考勤统计 - 加班次数
+     */
+    private Integer overtimeTimes;
+    
+    /**
      * 考勤记录列表
      */
     private List<AttendanceRecordDTO> records;

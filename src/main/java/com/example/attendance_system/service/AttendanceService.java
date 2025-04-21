@@ -23,13 +23,23 @@ public interface AttendanceService {
     FaceRecognitionDTO clockInByFace(MultipartFile file, Integer checkMethod) throws Exception;
     
     /**
-     * 分页查询员工的所有考勤记录
+     * 查询员工考勤记录
      * @param employeeNo 员工编号
-     * @param current 当前页码（从1开始）
+     * @param current 当前页码
      * @param size 每页记录数
-     * @return 分页查询结果
+     * @return 考勤记录分页结果
      */
     AttendanceRecordPageDTO getAttendanceRecords(String employeeNo, Integer current, Integer size);
+    
+    /**
+     * 查询员工考勤记录，支持时间范围筛选
+     * @param employeeNo 员工编号
+     * @param current 当前页码
+     * @param size 每页记录数
+     * @param timeRange     
+     * @return 考勤记录分页结果
+     */
+    AttendanceRecordPageDTO getAttendanceRecords(String employeeNo, Integer current, Integer size, Integer timeRange);
     
     /**
      * 分页查询员工的异常考勤记录
@@ -60,9 +70,11 @@ public interface AttendanceService {
      * @param current 当前页码（从1开始）
      * @param size 每页记录数
      * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNo 员工编号筛选（可选）
+     * @param name 员工姓名筛选（可选）
      * @return 分页查询结果
      */
-    AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo);
+    AttendanceExceptionPageDTO getAllExceptionAppealsExcludeEmployee(Integer current, Integer size, String excludeEmployeeNo, String employeeNo, String name);
     
     /**
      * 管理员更新异常考勤记录

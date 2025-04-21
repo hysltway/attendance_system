@@ -125,4 +125,14 @@ public class LeaveServiceImpl implements LeaveService {
     public List<String> getEmployeesOnLeave(LocalDate date) {
         return leaveRecordRepository.findEmployeesOnLeave(date);
     }
+    
+    @Override
+    public Page<LeaveRecord> getLeaveRecordsByEmployeeNameExcludeEmployee(String employeeName, String excludeEmployeeNo, Pageable pageable) {
+        return leaveRecordRepository.findByEmployeeNameContainingAndEmployeeNoNot(employeeName, excludeEmployeeNo, pageable);
+    }
+    
+    @Override
+    public Page<LeaveRecord> getLeaveRecordsByEmployeeNameAndStatusExcludeEmployee(String employeeName, Integer status, String excludeEmployeeNo, Pageable pageable) {
+        return leaveRecordRepository.findByEmployeeNameContainingAndStatusAndEmployeeNoNot(employeeName, status, excludeEmployeeNo, pageable);
+    }
 } 

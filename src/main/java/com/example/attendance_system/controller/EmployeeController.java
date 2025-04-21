@@ -319,9 +319,10 @@ public class EmployeeController {
      * @param employeeNo 员工编号
      * @param current 当前页码
      * @param size 每页记录数
+     * @param timeRange 时间范围：1-当月, 2-上月, 3-本季度, 4-本年度, 其他值或不传-不限时间范围
      * @return 考勤数据分页结果
      */
-    @Operation(summary = "查询员工考勤数据", description = "分页查询员工的所有考勤记录，包括正常和异常记录")
+    @Operation(summary = "查询员工考勤数据", description = "分页查询员工的所有考勤记录，包括正常和异常记录，支持时间范围筛选")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "查询成功"),
             @ApiResponse(responseCode = "400", description = "参数错误"),
@@ -336,7 +337,11 @@ public class EmployeeController {
             @RequestParam(defaultValue = "1") Integer current,
             
             @Parameter(description = "每页记录数", required = true)
-            @RequestParam(defaultValue = "10") Integer size) {
+            @RequestParam(defaultValue = "10") Integer size,
+            
+            @Parameter(description = "时间范围：1-当月, 2-上月, 3-本季度, 4-本年度, 不传-不限时间范围")
+            @RequestParam(required = false) Integer timeRange)
+    {
         try {
             // 参数校验
             if (current < 1) {
@@ -347,7 +352,7 @@ public class EmployeeController {
             }
             
             // 调用服务查询所有考勤记录
-            AttendanceRecordPageDTO result = attendanceService.getAttendanceRecords(employeeNo, current, size);
+            AttendanceRecordPageDTO result = attendanceService.getAttendanceRecords(employeeNo, current, size, timeRange);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();

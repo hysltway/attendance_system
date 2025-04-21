@@ -44,4 +44,18 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @return 员工列表
      */
     List<Employee> findByStatus(Integer status);
+    
+    /**
+     * 根据员工状态统计员工数量
+     * @param status 员工状态：1-在职，0-离职
+     * @return 员工数量
+     */
+    int countByStatus(Integer status);
+    
+    /**
+     * 根据员工姓名模糊查询
+     * @param name 员工姓名（部分）
+     * @return 匹配的员工列表
+     */
+    List<Employee> findByNameContaining(String name);
 } 

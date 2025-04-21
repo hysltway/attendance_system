@@ -43,6 +43,17 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
             String employeeNo, LocalDateTime startTime, LocalDateTime endTime);
 
     /**
+     * 根据员工编号和时间范围查询考勤记录，并按打卡时间降序排序
+     * @param employeeNo 员工编号
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param pageable 分页参数
+     * @return 考勤记录分页结果
+     */
+    Page<AttendanceRecord> findByEmployeeNoAndCheckTimeBetweenOrderByCheckTimeDesc(
+            String employeeNo, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
+
+    /**
      * 查询员工在指定日期是否已有打卡记录
      * @param employeeNo 员工编号
      * @param startOfDay 当天开始时间
@@ -93,4 +104,55 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
      */
     @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true AND a.employeeNo != :excludeEmployeeNo ORDER BY a.checkTime DESC")
     Page<AttendanceRecord> findAllExceptionAppealsExcludeEmployee(@Param("excludeEmployeeNo") String excludeEmployeeNo, Pageable pageable);
+    
+    /**
+     * 按员工编号查询已提交申诉但未处理的异常考勤记录，排除指定员工
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNo 要查询的员工编号
+     * @param pageable 分页参数
+     * @return 异常考勤记录分页结果
+     */
+    @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true AND a.employeeNo != :excludeEmployeeNo AND a.employeeNo = :employeeNo ORDER BY a.checkTime DESC")
+    Page<AttendanceRecord> findAllExceptionAppealsByEmployeeNo(
+            @Param("excludeEmployeeNo") String excludeEmployeeNo,
+            @Param("employeeNo") String employeeNo, 
+            Pageable pageable);
+    
+    /**
+     * 按员工编号列表查询已提交申诉但未处理的异常考勤记录，排除指定员工
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNos 要查询的员工编号列表
+     * @param pageable 分页参数
+     * @return 异常考勤记录分页结果
+     */
+    @Query("SELECT a FROM AttendanceRecord a WHERE a.submittedToAdmin = true AND a.employeeNo != :excludeEmployeeNo AND a.employeeNo IN :employeeNos ORDER BY a.checkTime DESC")
+    Page<AttendanceRecord> findAllExceptionAppealsByEmployeeNos(
+            @Param("excludeEmployeeNo") String excludeEmployeeNo,
+            @Param("employeeNos") List<String> employeeNos, 
+            Pageable pageable);
+
+    /**
+     * 根据时间范围查询所有考勤记录
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 考勤记录列表
+     */
+    List<AttendanceRecord> findAllByCheckTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
+    
+    /**
+     * 统计submittedToAdmin为true的记录数（待处理的考勤异常申诉）
+     * @param submittedToAdmin 是否提交给管理员处理
+     * @return 记录数量
+     */
+    int countBySubmittedToAdmin(boolean submittedToAdmin);
+    
+    /**
+     * 统计已处理的考勤异常记录数量
+     * @param processedByAdmin 是否已被管理员处理
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 记录数量
+     */
+    int countByProcessedByAdminAndUpdatedTimeBetween(
+            boolean processedByAdmin, LocalDateTime startTime, LocalDateTime endTime);
 } 

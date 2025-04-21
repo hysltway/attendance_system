@@ -2,6 +2,7 @@ package com.example.attendance_system.service;
 
 import com.example.attendance_system.dto.EmployeeInfoUpdateAuditDTO;
 import com.example.attendance_system.dto.EmployeeInfoUpdateDTO;
+import com.example.attendance_system.dto.EmployeeInfoUpdatePageDTO;
 import com.example.attendance_system.dto.EmployeeRegistrationDTO;
 import com.example.attendance_system.dto.LoginDTO;
 import com.example.attendance_system.entity.Employee;
@@ -57,9 +58,11 @@ public interface EmployeeService {
     /**
      * 查询所有待审核的员工信息更新请求，排除指定员工
      * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNo 员工编号筛选（可选）
+     * @param name 员工姓名筛选（可选）
      * @return 请求列表
      */
-    List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo);
+    List<EmployeeInfoUpdateRequest> getPendingInfoUpdateRequestsExcludeEmployee(String excludeEmployeeNo, String employeeNo, String name);
     
     /**
      * 审核员工信息更新请求
@@ -67,4 +70,15 @@ public interface EmployeeService {
      * @return 更新后的请求
      */
     EmployeeInfoUpdateRequest auditInfoUpdateRequest(EmployeeInfoUpdateAuditDTO auditDTO);
+    
+    /**
+     * 查询所有待审核的员工信息更新请求，排除指定员工（分页）
+     * @param excludeEmployeeNo 要排除的员工编号
+     * @param employeeNo 员工编号筛选（可选）
+     * @param name 员工姓名筛选（可选）
+     * @param current 当前页码（从1开始）
+     * @param size 每页记录数
+     * @return 请求分页结果
+     */
+    EmployeeInfoUpdatePageDTO getPendingInfoUpdateRequestsExcludeEmployeePage(String excludeEmployeeNo, String employeeNo, String name, Integer current, Integer size);
 } 
