@@ -1,6 +1,7 @@
 package com.example.attendance_system.service.impl;
 
 import com.example.attendance_system.dto.AdminDashboardDTO;
+import com.example.attendance_system.dto.WorkingHoursDTO;
 import com.example.attendance_system.entity.AttendanceRecord;
 import com.example.attendance_system.entity.Department;
 import com.example.attendance_system.entity.Employee;
@@ -38,6 +39,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     private DepartmentRepository departmentRepository;
 
     @Override
+    @Deprecated
     public AdminDashboardDTO getDashboardData(Integer timeGranularity) {
         if (timeGranularity == null) {
             timeGranularity = 1; // 默认为日
@@ -68,6 +70,201 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         dashboardDTO.setApprovalStatistics(getApprovalStatisticsData());
 
         return dashboardDTO;
+    }
+    
+    @Override
+    public AdminDashboardDTO.SummaryDTO getDashboardSummary() {
+        return getSummaryData();
+    }
+    
+    @Override
+    public AdminDashboardDTO.AttendanceTrendDTO getAttendanceTrend(Integer timeGranularity) {
+        if (timeGranularity == null) {
+            timeGranularity = 1; // 默认为日
+        }
+        
+        if (timeGranularity != 1 && timeGranularity != 3) {
+            timeGranularity = 1; // 只支持日(1)和月(3)两种粒度
+        }
+        
+        return getAttendanceTrendData(timeGranularity);
+    }
+    
+    @Override
+    public AdminDashboardDTO.StatusDistributionDTO getStatusDistribution() {
+        return getStatusDistributionData();
+    }
+    
+    @Override
+    public AdminDashboardDTO.DepartmentComparisonDTO getDepartmentComparison() {
+        return getDepartmentComparisonData();
+    }
+    
+    @Override
+    public AdminDashboardDTO.TimeHeatmapDTO getTimeHeatmap() {
+        return getTimeHeatmapData();
+    }
+    
+    @Override
+    public AdminDashboardDTO.AbnormalWarningDTO getAbnormalWarning() {
+        return getAbnormalWarningData();
+    }
+    
+    @Override
+    public Map<String, Object> getWorkingHours() {
+        // 创建结果Map
+        Map<String, Object> result = new HashMap<>();
+        
+        // 获取当前日期
+        LocalDate today = LocalDate.now();
+        
+        // 获取日统计数据
+        WorkingHoursDTO dailyStats = calculateWorkingHours(today, today, "日");
+        result.put("daily", dailyStats);
+        
+        // 获取周统计数据
+        LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1);
+        WorkingHoursDTO weeklyStats = calculateWorkingHours(startOfWeek, today, "周");
+        result.put("weekly", weeklyStats);
+        
+        // 获取月统计数据
+        LocalDate startOfMonth = today.withDayOfMonth(1);
+        WorkingHoursDTO monthlyStats = calculateWorkingHours(startOfMonth, today, "月");
+        result.put("monthly", monthlyStats);
+        
+        return result;
+    }
+    
+    /**
+     * 计算指定日期范围内的工时统计数据
+     *
+     * @param startDate 开始日期
+     * @param endDate   结束日期
+     * @param period    统计周期（日/周/月）
+     * @return 工时统计数据
+     */
+    private WorkingHoursDTO calculateWorkingHours(LocalDate startDate, LocalDate endDate, String period) {
+        // 设置时间范围
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        
+        // 获取活跃员工数量
+        List<Employee> activeEmployees = employeeRepository.findByStatus(1);
+        int totalEmployeeCount = activeEmployees.size();
+        
+        // 查询时间范围内的考勤记录
+        List<AttendanceRecord> attendanceRecords = attendanceRecordRepository.findAllByCheckTimeBetween(startDateTime, endDateTime);
+        
+        // 查询时间范围内的请假记录
+        List<LeaveRecord> leaveRecords = leaveRecordRepository.findApprovedLeaveByDateRange(startDate, endDate);
+        
+        // 计算平均工作时长
+        double totalWorkingHours = 0.0;
+        double totalOvertimeHours = 0.0;
+        double maxWorkingHours = 0.0;
+        double minWorkingHours = Double.MAX_VALUE;
+        int attendanceCount = 0;
+        int overtimeEmployeeCount = 0;
+        
+        // 处理不同员工的工作时长
+        Map<String, List<AttendanceRecord>> employeeAttendanceMap = attendanceRecords.stream()
+                .collect(Collectors.groupingBy(AttendanceRecord::getEmployeeNo));
+        
+        for (Map.Entry<String, List<AttendanceRecord>> entry : employeeAttendanceMap.entrySet()) {
+            double employeeWorkingHours = calculateEmployeeWorkingHours(entry.getValue());
+            
+            if (employeeWorkingHours > 0) {
+                attendanceCount++;
+                totalWorkingHours += employeeWorkingHours;
+                
+                // 计算加班时长 (假设标准工作时长为8小时)
+                double overtimeHours = Math.max(0, employeeWorkingHours - 8.0);
+                totalOvertimeHours += overtimeHours;
+                
+                if (overtimeHours > 0) {
+                    overtimeEmployeeCount++;
+                }
+                
+                // 更新最大和最小工作时长
+                maxWorkingHours = Math.max(maxWorkingHours, employeeWorkingHours);
+                minWorkingHours = Math.min(minWorkingHours, employeeWorkingHours);
+            }
+        }
+        
+        // 计算请假时长
+        double totalLeaveHours = leaveRecords.stream()
+                .mapToDouble(record -> {
+                    // 假设每天请假8小时
+                    long daysBetween = record.getEndDate().toEpochDay() - 
+                            record.getStartDate().toEpochDay() + 1;
+                    return daysBetween * 8.0;
+                })
+                .sum();
+        
+        // 计算平均值
+        double averageWorkingHours = attendanceCount > 0 ? totalWorkingHours / attendanceCount : 0;
+        double averageOvertimeHours = attendanceCount > 0 ? totalOvertimeHours / attendanceCount : 0;
+        double averageLeaveHours = totalEmployeeCount > 0 ? totalLeaveHours / totalEmployeeCount : 0;
+        double effectiveWorkingHours = Math.max(0, averageWorkingHours - 1.0); // 假设平均休息1小时
+        
+        // 计算出勤率
+        double attendanceRate = totalEmployeeCount > 0 ? (double) attendanceCount / totalEmployeeCount : 0;
+        
+        // 计算加班员工比例
+        double overtimeEmployeeRate = attendanceCount > 0 ? (double) overtimeEmployeeCount / attendanceCount : 0;
+        
+        // 如果没有记录，设置最小工作时长为0
+        if (minWorkingHours == Double.MAX_VALUE) {
+            minWorkingHours = 0.0;
+        }
+        
+        // 构建并返回结果
+        return WorkingHoursDTO.builder()
+                .averageWorkingHours(roundToOneDecimal(averageWorkingHours))
+                .averageOvertimeHours(roundToOneDecimal(averageOvertimeHours))
+                .averageLeaveHours(roundToOneDecimal(averageLeaveHours))
+                .maxWorkingHours(roundToOneDecimal(maxWorkingHours))
+                .minWorkingHours(roundToOneDecimal(minWorkingHours))
+                .attendanceRate(roundToOneDecimal(attendanceRate * 100)) // 转为百分比
+                .overtimeEmployeeRate(roundToOneDecimal(overtimeEmployeeRate * 100)) // 转为百分比
+                .effectiveWorkingHours(roundToOneDecimal(effectiveWorkingHours))
+                .period(period)
+                .build();
+    }
+    
+    /**
+     * 计算员工的工作时长
+     *
+     * @param records 员工的考勤记录
+     * @return 工作时长（小时）
+     */
+    private double calculateEmployeeWorkingHours(List<AttendanceRecord> records) {
+        if (records.size() < 2) {
+            return 0.0;
+        }
+        
+        // 按时间排序
+        records.sort(Comparator.comparing(AttendanceRecord::getCheckTime));
+        
+        // 获取第一次打卡（上班）和最后一次打卡（下班）
+        LocalDateTime firstCheckIn = records.get(0).getCheckTime();
+        LocalDateTime lastCheckOut = records.get(records.size() - 1).getCheckTime();
+        
+        // 计算工作时长（小时）
+        double hours = (lastCheckOut.getHour() - firstCheckIn.getHour()) +
+                (lastCheckOut.getMinute() - firstCheckIn.getMinute()) / 60.0;
+        
+        return Math.max(0, hours);
+    }
+    
+    /**
+     * 四舍五入到小数点后一位
+     *
+     * @param value 原始值
+     * @return 四舍五入后的值
+     */
+    private double roundToOneDecimal(double value) {
+        return Math.round(value * 10) / 10.0;
     }
 
     /**
@@ -115,31 +312,20 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
         // 今日请假人数
         List<LeaveRecord> todayLeaveRecords = leaveRecordRepository.findApprovedLeaveByDateRange(today, today);
-        int todayLeaveCount = (int) todayLeaveRecords.stream()
-                .map(LeaveRecord::getEmployeeNo)
-                .distinct()
-                .count();
+        int todayLeaveCount = todayLeaveRecords.size();
 
         // 昨日请假人数
         List<LeaveRecord> yesterdayLeaveRecords = leaveRecordRepository.findApprovedLeaveByDateRange(yesterday, yesterday);
-        int yesterdayLeaveCount = (int) yesterdayLeaveRecords.stream()
-                .map(LeaveRecord::getEmployeeNo)
-                .distinct()
-                .count();
+        int yesterdayLeaveCount = yesterdayLeaveRecords.size();
 
         // 今日请假人数同比变化率
         double leaveChangeRate = calculateChangeRate(todayLeaveCount, yesterdayLeaveCount);
 
-        // 今日缺勤人数（包括旷工）
-        int todayAbsentCount = 0;
-
-        // 计算缺勤人数（总员工数 - 出勤人数 - 请假人数）
-        todayAbsentCount = totalEmployeeCount - todayAttendanceCount - todayLeaveCount;
-        if (todayAbsentCount < 0) todayAbsentCount = 0; // 确保不为负数
+        // 今日缺勤人数 = 总人数 - 出勤人数 - 请假人数
+        int todayAbsentCount = Math.max(0, totalEmployeeCount - todayAttendanceCount - todayLeaveCount);
 
         // 昨日缺勤人数
-        int yesterdayAbsentCount = totalEmployeeCount - yesterdayAttendanceCount - yesterdayLeaveCount;
-        if (yesterdayAbsentCount < 0) yesterdayAbsentCount = 0;
+        int yesterdayAbsentCount = Math.max(0, totalEmployeeCount - yesterdayAttendanceCount - yesterdayLeaveCount);
 
         // 今日缺勤人数同比变化率
         double absentChangeRate = calculateChangeRate(todayAbsentCount, yesterdayAbsentCount);
@@ -178,36 +364,34 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         // 今日早退人数同比变化率
         double earlyLeaveChangeRate = calculateChangeRate(todayEarlyLeaveCount, yesterdayEarlyLeaveCount);
 
-        // 计算今日准时率
-        int onTimeCount = todayAttendanceCount - todayLateCount - todayEarlyLeaveCount;
+        // 今日准时率 = (出勤人数 - 迟到人数 - 早退人数) / 出勤人数
         double todayOnTimeRate = todayAttendanceCount > 0 ?
-                (double) onTimeCount / todayAttendanceCount * 100 : 0;
+                (double) (todayAttendanceCount - todayLateCount - todayEarlyLeaveCount) / todayAttendanceCount : 0;
 
-        // 计算昨日准时率
-        int yesterdayOnTimeCount = yesterdayAttendanceCount - yesterdayLateCount - yesterdayEarlyLeaveCount;
+        // 昨日准时率
         double yesterdayOnTimeRate = yesterdayAttendanceCount > 0 ?
-                (double) yesterdayOnTimeCount / yesterdayAttendanceCount * 100 : 0;
+                (double) (yesterdayAttendanceCount - yesterdayLateCount - yesterdayEarlyLeaveCount) / yesterdayAttendanceCount : 0;
 
-        // 今日准时率同比变化率
+        // 今日准时率同比变化
         double onTimeRateChangeRate = calculateChangeRate(todayOnTimeRate, yesterdayOnTimeRate);
 
-        // 打卡异常总数：迟到 + 早退 + 缺勤
+        // 打卡异常总数
         int totalAbnormalCount = todayLateCount + todayEarlyLeaveCount + todayAbsentCount;
 
-        // 人脸识别失败次数（假设数据）
-        int faceRecognitionFailCount = 0; // 实际项目中需从日志或专门的表中统计
+        // 人脸识别失败次数（暂时默认为0，后续根据实际需求添加）
+        int faceRecognitionFailCount = 0;
 
-        // 未打卡人数
-        int notCheckInCount = totalEmployeeCount - todayAttendanceCount - todayLeaveCount;
-        if (notCheckInCount < 0) notCheckInCount = 0;
+        // 未打卡人数 = 应出勤人数 - 实际打卡人数
+        int expectedAttendanceCount = totalEmployeeCount - todayLeaveCount;
+        int notCheckInCount = Math.max(0, expectedAttendanceCount - todayAttendanceCount);
 
-        // 构建并返回汇总数据
+        // 构建并返回基础指标统计数据
         return AdminDashboardDTO.SummaryDTO.builder()
                 .attendanceCount(todayAttendanceCount)
                 .attendanceChangeRate(attendanceChangeRate)
                 .absentCount(todayAbsentCount)
                 .absentChangeRate(absentChangeRate)
-                .onTimeRate(todayOnTimeRate)
+                .onTimeRate(todayOnTimeRate * 100) // 转为百分比
                 .onTimeRateChangeRate(onTimeRateChangeRate)
                 .lateCount(todayLateCount)
                 .lateChangeRate(lateChangeRate)
@@ -221,18 +405,12 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .build();
     }
 
-    /**
-     * 计算变化率
-     *
-     * @param current  当前值
-     * @param previous 前一个值
-     * @return 变化率（百分比）
-     */
-    private double calculateChangeRate(double current, double previous) {
-        if (previous == 0) {
-            return current > 0 ? 100.0 : 0.0;
+    // 计算同比变化率
+    private double calculateChangeRate(double currentValue, double previousValue) {
+        if (previousValue == 0) {
+            return currentValue > 0 ? 100.0 : 0.0;
         }
-        return ((current - previous) / previous) * 100.0;
+        return ((currentValue - previousValue) / previousValue) * 100;
     }
 
     /**
