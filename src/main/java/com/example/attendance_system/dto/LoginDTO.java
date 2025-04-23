@@ -10,13 +10,12 @@ import lombok.Data;
 @Schema(description = "登录请求参数")
 public class LoginDTO {
     /**
-     * 员工编号
+     * 账号 - 可以是员工编号、手机号或邮箱
      */
-    @Schema(description = "员工编号（必填，系统唯一标识，格式为'EMP'开头加年份和顺序号，如EMP2025001）",
+    @Schema(description = "账号（必填，可以是员工编号、手机号或邮箱）",
             required = true,
-            example = "EMP2025001",
-            pattern = "EMP\\d{7}")
-    private String employeeNo;
+            example = "10250001 或 13812345678 或 example@company.com")
+    private String account;
 
     /**
      * 密码

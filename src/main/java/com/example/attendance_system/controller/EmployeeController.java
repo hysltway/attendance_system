@@ -94,13 +94,13 @@ public class EmployeeController {
     /**
      * 员工登录接口
      *
-     * @param loginDTO 登录信息
+     * @param loginDTO 登录信息 (包含账号和密码)
      * @return 登录结果
      */
-    @Operation(summary = "员工登录", description = "员工账号登录系统")
+    @Operation(summary = "员工登录", description = "员工账号登录系统，可使用员工编号、邮箱或手机号进行登录")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "登录成功"),
-            @ApiResponse(responseCode = "400", description = "用户名或密码错误"),
+            @ApiResponse(responseCode = "400", description = "账号不存在或密码错误"),
             @ApiResponse(responseCode = "500", description = "服务器内部错误")
     })
     @PostMapping("/login")

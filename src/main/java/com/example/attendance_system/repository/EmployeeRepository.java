@@ -29,6 +29,22 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Employee findByEmployeeNo(String employeeNo);
 
     /**
+     * 根据邮箱查询员工
+     *
+     * @param email 邮箱
+     * @return 员工对象
+     */
+    Employee findByEmail(String email);
+
+    /**
+     * 根据手机号查询员工
+     *
+     * @param phoneNumber 手机号
+     * @return 员工对象
+     */
+    Employee findByPhoneNumber(String phoneNumber);
+
+    /**
      * 检查手机号是否已存在
      *
      * @param phoneNumber 手机号

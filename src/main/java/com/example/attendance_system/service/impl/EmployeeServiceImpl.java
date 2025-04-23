@@ -54,18 +54,34 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee login(LoginDTO loginDTO) {
-        if (loginDTO.getEmployeeNo() == null || loginDTO.getEmployeeNo().trim().isEmpty()) {
-            throw new IllegalArgumentException("员工编号不能为空");
+        if (loginDTO.getAccount() == null || loginDTO.getAccount().trim().isEmpty()) {
+            throw new IllegalArgumentException("账号不能为空");
         }
 
         if (loginDTO.getPassword() == null || loginDTO.getPassword().trim().isEmpty()) {
             throw new IllegalArgumentException("密码不能为空");
         }
 
-        Employee employee = employeeRepository.findByEmployeeNo(loginDTO.getEmployeeNo());
+        // 尝试通过员工编号、邮箱或手机号查找员工
+        Employee employee = null;
+        String account = loginDTO.getAccount().trim();
+        
+        // 首先尝试员工编号登录
+        employee = employeeRepository.findByEmployeeNo(account);
+        
+        // 如果找不到，尝试邮箱登录
+        if (employee == null && account.contains("@")) {
+            employee = employeeRepository.findByEmail(account);
+        }
+        
+        // 如果还找不到，尝试手机号登录
+        if (employee == null && account.matches("^1[3-9]\\d{9}$")) {
+            employee = employeeRepository.findByPhoneNumber(account);
+        }
 
+        // 如果所有方式都找不到
         if (employee == null) {
-            throw new IllegalArgumentException("员工编号不存在");
+            throw new IllegalArgumentException("账号不存在，请检查您的员工编号、邮箱或手机号是否正确");
         }
 
         if (!employee.getPassword().equals(loginDTO.getPassword())) {
