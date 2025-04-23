@@ -30,6 +30,12 @@ public class AttendanceRecordDTO {
     private String employeeNo;
 
     /**
+     * 用户ID（区块链使用）
+     */
+    @Schema(description = "用户ID，用于区块链记录", example = "1")
+    private Long userId;
+
+    /**
      * 打卡时间
      */
     @Schema(description = "打卡时间（原始时间戳）", example = "2025-05-01 08:55:23")
@@ -76,6 +82,12 @@ public class AttendanceRecordDTO {
      */
     @Schema(description = "打卡状态中文描述", example = "正常")
     private String statusDesc;
+
+    /**
+     * 位置信息
+     */
+    @Schema(description = "打卡位置信息", example = "公司前台")
+    private String location;
 
     /**
      * 备注

@@ -1,5 +1,6 @@
 package com.example.attendance_system.service.impl;
 
+import com.example.attendance_system.blockchain.Block;
 import com.example.attendance_system.dto.*;
 import com.example.attendance_system.entity.AttendanceRecord;
 import com.example.attendance_system.entity.Employee;
@@ -7,6 +8,7 @@ import com.example.attendance_system.repository.AttendanceRecordRepository;
 import com.example.attendance_system.repository.EmployeeRepository;
 import com.example.attendance_system.repository.FaceFeatureRepository;
 import com.example.attendance_system.service.AttendanceService;
+import com.example.attendance_system.service.BlockchainService;
 import com.example.attendance_system.util.FaceRecognitionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Autowired
     private AttendanceRecordRepository attendanceRecordRepository;
+    
+    @Autowired
+    private BlockchainService blockchainService;
 
     /**
      * 人脸相似度阈值，用于判断是否为同一个人
@@ -57,6 +62,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private double similarityThreshold;
 
     @Override
+    @Transactional
     public FaceRecognitionDTO clockInByFace(MultipartFile file, Integer checkMethod) throws Exception {
         if (file.isEmpty()) {
             return FaceRecognitionDTO.builder()
@@ -247,7 +253,22 @@ public class AttendanceServiceImpl implements AttendanceService {
             record.setReason(reason);
 
             // 保存打卡记录
-            attendanceRecordRepository.save(record);
+            AttendanceRecord savedRecord = attendanceRecordRepository.save(record);
+            
+            // 添加到区块链
+            try {
+                // 将记录DTO添加到区块链
+                AttendanceRecordDTO dto = convertToDTO(savedRecord);
+                Block block = blockchainService.addAttendanceRecord(dto);
+                if (block != null) {
+                    log.info("考勤记录 {} 已成功添加到区块链", savedRecord.getId());
+                } else {
+                    log.warn("考勤记录 {} 添加到区块链失败", savedRecord.getId());
+                }
+            } catch (Exception e) {
+                log.error("添加考勤记录到区块链时发生错误", e);
+                // 不影响正常流程继续执行
+            }
 
             // 构建返回消息
             String resultMessage;
@@ -791,5 +812,30 @@ public class AttendanceServiceImpl implements AttendanceService {
         result.setRecords(records);
 
         return result;
+    }
+
+    /**
+     * 将历史考勤记录上传到区块链
+     * 
+     * @param batchSize 每批次处理的记录数
+     * @return 上传的记录总数
+     */
+    public int uploadHistoricalAttendanceRecordsToBlockchain(int batchSize) {
+        log.info("开始上传历史考勤记录到区块链，批次大小: {}", batchSize);
+        return blockchainService.uploadHistoricalRecords(batchSize);
+    }
+
+    /**
+     * 将AttendanceRecord转换为AttendanceRecordDTO
+     */
+    private AttendanceRecordDTO convertToDTO(AttendanceRecord record) {
+        AttendanceRecordDTO dto = new AttendanceRecordDTO();
+        dto.setId(record.getId());
+        dto.setEmployeeNo(record.getEmployeeNo());
+        dto.setCheckTime(record.getCheckTime());
+        dto.setCheckType(record.getCheckType());
+        dto.setLocation(record.getRemark()); // 使用备注作为位置信息
+        dto.setRemark(record.getRemark());
+        return dto;
     }
 } 
