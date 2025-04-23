@@ -31,17 +31,18 @@ public class AttendanceController {
     /**
      * 人脸识别打卡接口
      * 接收前端上传的人脸图像，进行识别并记录打卡
+     * 注意：上传的人脸图像必须只包含一个人脸，否则会返回错误
      *
      * @param file        人脸图像文件
      * @param checkMethod 打卡方式：1-人脸识别，2-管理员录入，3-系统自动生成，默认为1
      * @return 打卡结果
      */
-    @Operation(summary = "人脸识别打卡", description = "上传人脸图像进行身份识别并记录打卡，系统会自动判断当前是上班打卡还是下班打卡")
+    @Operation(summary = "人脸识别打卡", description = "上传人脸图像进行身份识别并记录打卡，系统会自动判断当前是上班打卡还是下班打卡。图像必须只包含一个人脸，否则会返回错误。")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "打卡成功",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = FaceRecognitionDTO.class))),
-            @ApiResponse(responseCode = "400", description = "人脸识别失败或参数错误",
+            @ApiResponse(responseCode = "400", description = "人脸识别失败、多人脸或参数错误",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = FaceRecognitionDTO.class))),
             @ApiResponse(responseCode = "500", description = "服务器内部错误",
@@ -50,7 +51,7 @@ public class AttendanceController {
     })
     @PostMapping("/face")
     public ResponseEntity<FaceRecognitionDTO> faceRecognition(
-            @Parameter(description = "人脸图像文件（必填），支持JPG、PNG格式，建议分辨率不低于640x480", required = true)
+            @Parameter(description = "人脸图像文件（必填），支持JPG、JPEG格式，要求图像中只能包含一个人脸，建议分辨率不低于640x480", required = true)
             @RequestParam("file") MultipartFile file,
 
             @Parameter(description = "打卡方式（可选）：1=人脸识别，2=管理员录入，3=系统自动生成，默认为1", example = "1")

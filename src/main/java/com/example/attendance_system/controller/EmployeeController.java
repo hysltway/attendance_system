@@ -244,12 +244,12 @@ public class EmployeeController {
      * @param faceImage  人脸图像文件（JPG格式）
      * @return 录入结果
      */
-    @Operation(summary = "员工人脸录入/重新录入", description = "支持已注册员工通过上传JPG文件录入或重新录入人脸图像，系统会根据employeeNo判断是首次录入还是覆盖更新")
+    @Operation(summary = "员工人脸录入/重新录入", description = "支持已注册员工通过上传JPG文件录入或重新录入人脸图像，系统会根据employeeNo判断是首次录入还是覆盖更新。注意：图像中必须只包含一个人脸，否则会返回错误。")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "人脸录入/更新成功",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Object.class))),
-            @ApiResponse(responseCode = "400", description = "请求参数错误，如员工编号不存在或文件格式不正确",
+            @ApiResponse(responseCode = "400", description = "请求参数错误，如员工编号不存在、文件格式不正确或图像中包含多个人脸",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Object.class))),
             @ApiResponse(responseCode = "500", description = "服务器内部错误，处理人脸录入时出现异常",
@@ -261,7 +261,7 @@ public class EmployeeController {
             @Parameter(description = "员工编号", required = true)
             @RequestParam String employeeNo,
 
-            @Parameter(description = "人脸图像文件（JPG格式）", required = true)
+            @Parameter(description = "人脸图像文件（JPG格式），必须只包含一个人脸", required = true)
             @RequestPart MultipartFile faceImage) {
         try {
             // 检查员工是否存在
