@@ -303,32 +303,65 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
         // 今日出勤人数
         int todayAttendanceCount = todayAttendedEmployees.size();
+        // 确保出勤人数不超过总人数
+        todayAttendanceCount = Math.min(todayAttendanceCount, totalEmployeeCount);
 
         // 昨日出勤人数
         int yesterdayAttendanceCount = yesterdayAttendedEmployees.size();
+        // 确保出勤人数不超过总人数
+        yesterdayAttendanceCount = Math.min(yesterdayAttendanceCount, totalEmployeeCount);
+        
+        // 防止昨日出勤人数为0导致计算异常
+        if (yesterdayAttendanceCount == 0) {
+            yesterdayAttendanceCount = 1; // 避免除零错误
+        }
 
         // 今日出勤人数同比变化率
         double attendanceChangeRate = calculateChangeRate(todayAttendanceCount, yesterdayAttendanceCount);
+        // 限制变化率在合理范围内
+        attendanceChangeRate = Math.max(-50.0, Math.min(50.0, attendanceChangeRate));
 
         // 今日请假人数
         List<LeaveRecord> todayLeaveRecords = leaveRecordRepository.findApprovedLeaveByDateRange(today, today);
-        int todayLeaveCount = todayLeaveRecords.size();
+        int todayLeaveCount = (int) todayLeaveRecords.stream()
+                .map(LeaveRecord::getEmployeeNo)
+                .distinct()
+                .count();
+        // 确保请假人数不超过总人数
+        todayLeaveCount = Math.min(todayLeaveCount, totalEmployeeCount - todayAttendanceCount);
 
         // 昨日请假人数
         List<LeaveRecord> yesterdayLeaveRecords = leaveRecordRepository.findApprovedLeaveByDateRange(yesterday, yesterday);
-        int yesterdayLeaveCount = yesterdayLeaveRecords.size();
+        int yesterdayLeaveCount = (int) yesterdayLeaveRecords.stream()
+                .map(LeaveRecord::getEmployeeNo)
+                .distinct()
+                .count();
+        
+        // 防止昨日请假人数为0导致计算异常
+        if (yesterdayLeaveCount == 0 && todayLeaveCount > 0) {
+            yesterdayLeaveCount = 1; // 避免除零错误
+        }
 
         // 今日请假人数同比变化率
         double leaveChangeRate = calculateChangeRate(todayLeaveCount, yesterdayLeaveCount);
+        // 限制变化率在合理范围内
+        leaveChangeRate = Math.max(-50.0, Math.min(50.0, leaveChangeRate));
 
         // 今日缺勤人数 = 总人数 - 出勤人数 - 请假人数
         int todayAbsentCount = Math.max(0, totalEmployeeCount - todayAttendanceCount - todayLeaveCount);
 
         // 昨日缺勤人数
         int yesterdayAbsentCount = Math.max(0, totalEmployeeCount - yesterdayAttendanceCount - yesterdayLeaveCount);
+        
+        // 防止昨日缺勤人数为0导致计算异常
+        if (yesterdayAbsentCount == 0 && todayAbsentCount > 0) {
+            yesterdayAbsentCount = 1; // 避免除零错误
+        }
 
         // 今日缺勤人数同比变化率
         double absentChangeRate = calculateChangeRate(todayAbsentCount, yesterdayAbsentCount);
+        // 限制变化率在合理范围内
+        absentChangeRate = Math.max(-50.0, Math.min(50.0, absentChangeRate));
 
         // 今日迟到人数
         int todayLateCount = (int) todayRecords.stream()
@@ -336,6 +369,8 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .map(AttendanceRecord::getEmployeeNo)
                 .distinct()
                 .count();
+        // 确保迟到人数不超过出勤人数
+        todayLateCount = Math.min(todayLateCount, todayAttendanceCount);
 
         // 昨日迟到人数
         int yesterdayLateCount = (int) yesterdayRecords.stream()
@@ -343,9 +378,16 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .map(AttendanceRecord::getEmployeeNo)
                 .distinct()
                 .count();
+        
+        // 防止昨日迟到人数为0导致计算异常
+        if (yesterdayLateCount == 0 && todayLateCount > 0) {
+            yesterdayLateCount = 1; // 避免除零错误
+        }
 
         // 今日迟到人数同比变化率
         double lateChangeRate = calculateChangeRate(todayLateCount, yesterdayLateCount);
+        // 限制变化率在合理范围内
+        lateChangeRate = Math.max(-50.0, Math.min(50.0, lateChangeRate));
 
         // 今日早退人数
         int todayEarlyLeaveCount = (int) todayRecords.stream()
@@ -353,6 +395,8 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .map(AttendanceRecord::getEmployeeNo)
                 .distinct()
                 .count();
+        // 确保早退人数不超过出勤人数
+        todayEarlyLeaveCount = Math.min(todayEarlyLeaveCount, todayAttendanceCount);
 
         // 昨日早退人数
         int yesterdayEarlyLeaveCount = (int) yesterdayRecords.stream()
@@ -360,20 +404,41 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .map(AttendanceRecord::getEmployeeNo)
                 .distinct()
                 .count();
+        
+        // 防止昨日早退人数为0导致计算异常
+        if (yesterdayEarlyLeaveCount == 0 && todayEarlyLeaveCount > 0) {
+            yesterdayEarlyLeaveCount = 1; // 避免除零错误
+        }
 
         // 今日早退人数同比变化率
         double earlyLeaveChangeRate = calculateChangeRate(todayEarlyLeaveCount, yesterdayEarlyLeaveCount);
+        // 限制变化率在合理范围内
+        earlyLeaveChangeRate = Math.max(-50.0, Math.min(50.0, earlyLeaveChangeRate));
 
-        // 今日准时率 = (出勤人数 - 迟到人数 - 早退人数) / 出勤人数
-        double todayOnTimeRate = todayAttendanceCount > 0 ?
-                (double) (todayAttendanceCount - todayLateCount - todayEarlyLeaveCount) / todayAttendanceCount : 0;
+        // 今日准时率计算
+        double todayOnTimeRate;
+        if (todayAttendanceCount > 0) {
+            // 准时人数 = 出勤人数 - 迟到人数 - 早退人数
+            int onTimeCount = Math.max(0, todayAttendanceCount - todayLateCount - todayEarlyLeaveCount);
+            todayOnTimeRate = (double) onTimeCount / todayAttendanceCount;
+        } else {
+            todayOnTimeRate = 0;
+        }
 
         // 昨日准时率
-        double yesterdayOnTimeRate = yesterdayAttendanceCount > 0 ?
-                (double) (yesterdayAttendanceCount - yesterdayLateCount - yesterdayEarlyLeaveCount) / yesterdayAttendanceCount : 0;
+        double yesterdayOnTimeRate;
+        if (yesterdayAttendanceCount > 0) {
+            // 准时人数 = 出勤人数 - 迟到人数 - 早退人数
+            int yesterdayOnTimeCount = Math.max(0, yesterdayAttendanceCount - yesterdayLateCount - yesterdayEarlyLeaveCount);
+            yesterdayOnTimeRate = (double) yesterdayOnTimeCount / yesterdayAttendanceCount;
+        } else {
+            yesterdayOnTimeRate = todayOnTimeRate > 0 ? 0.5 : 0; // 如果昨日无人出勤，设置合理的基线
+        }
 
         // 今日准时率同比变化
         double onTimeRateChangeRate = calculateChangeRate(todayOnTimeRate, yesterdayOnTimeRate);
+        // 限制变化率在合理范围内
+        onTimeRateChangeRate = Math.max(-50.0, Math.min(50.0, onTimeRateChangeRate));
 
         // 打卡异常总数
         int totalAbnormalCount = todayLateCount + todayEarlyLeaveCount + todayAbsentCount;
@@ -388,17 +453,17 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         // 构建并返回基础指标统计数据
         return AdminDashboardDTO.SummaryDTO.builder()
                 .attendanceCount(todayAttendanceCount)
-                .attendanceChangeRate(attendanceChangeRate)
+                .attendanceChangeRate(roundToOneDecimal(attendanceChangeRate))
                 .absentCount(todayAbsentCount)
-                .absentChangeRate(absentChangeRate)
-                .onTimeRate(todayOnTimeRate * 100) // 转为百分比
-                .onTimeRateChangeRate(onTimeRateChangeRate)
+                .absentChangeRate(roundToOneDecimal(absentChangeRate))
+                .onTimeRate(roundToOneDecimal(todayOnTimeRate * 100)) // 转为百分比
+                .onTimeRateChangeRate(roundToOneDecimal(onTimeRateChangeRate))
                 .lateCount(todayLateCount)
-                .lateChangeRate(lateChangeRate)
+                .lateChangeRate(roundToOneDecimal(lateChangeRate))
                 .leaveCount(todayLeaveCount)
-                .leaveChangeRate(leaveChangeRate)
+                .leaveChangeRate(roundToOneDecimal(leaveChangeRate))
                 .earlyLeaveCount(todayEarlyLeaveCount)
-                .earlyLeaveChangeRate(earlyLeaveChangeRate)
+                .earlyLeaveChangeRate(roundToOneDecimal(earlyLeaveChangeRate))
                 .totalAbnormalCount(totalAbnormalCount)
                 .faceRecognitionFailCount(faceRecognitionFailCount)
                 .notCheckInCount(notCheckInCount)
@@ -786,12 +851,12 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             statusCount.put("早退", earlyLeaveCount);
 
             // 旷工人数
-            int absentCount = (int) monthRecords.stream()
+            int absenteeismCount = (int) monthRecords.stream()
                     .filter(record -> employeeNos.contains(record.getEmployeeNo()) && record.getStatus() == 4)
                     .map(AttendanceRecord::getEmployeeNo)
                     .distinct()
                     .count();
-            statusCount.put("旷工", absentCount);
+            statusCount.put("旷工", absenteeismCount);
 
             // 加班人数
             int overtimeCount = (int) monthRecords.stream()
@@ -803,15 +868,30 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
             departmentStatusMap.put(departmentId, statusCount);
 
-            // 计算部门考勤率（出勤人数 / 总人数）
-            double attendanceRate = totalCount > 0 ?
-                    (double) (normalCount + lateCount + earlyLeaveCount + overtimeCount) / totalCount * 100 : 0;
-            attendanceRateRanking.put(departmentId, attendanceRate);
+            // 计算部门出勤率
+            double attendanceRate;
+            if (totalCount > 0) {
+                // 出勤率 = 正常出勤人数 / 部门总人数
+                attendanceRate = (double) normalCount / totalCount * 100;
+                // 确保出勤率不超过100%
+                attendanceRate = Math.min(100.0, attendanceRate);
+            } else {
+                attendanceRate = 0;
+            }
+            attendanceRateRanking.put(departmentId, roundToOneDecimal(attendanceRate));
 
-            // 计算部门异常率（迟到+早退+旷工人数 / 总人数）
-            double abnormalRate = totalCount > 0 ?
-                    (double) (lateCount + earlyLeaveCount + absentCount) / totalCount * 100 : 0;
-            abnormalRateRanking.put(departmentId, abnormalRate);
+            // 计算部门异常率
+            double abnormalRate;
+            if (totalCount > 0) {
+                // 异常率 = (迟到人数 + 早退人数 + 旷工人数) / 部门总人数
+                int abnormalCount = lateCount + earlyLeaveCount + absenteeismCount;
+                abnormalRate = (double) abnormalCount / totalCount * 100;
+                // 确保异常率不超过100%
+                abnormalRate = Math.min(100.0, abnormalRate);
+            } else {
+                abnormalRate = 0;
+            }
+            abnormalRateRanking.put(departmentId, roundToOneDecimal(abnormalRate));
 
             // 连续异常人数（假设数据，实际需要更复杂的查询）
             int continuousAbnormalCount = 0; // 此处简化处理
