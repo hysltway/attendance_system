@@ -34,6 +34,13 @@ spring:
     serialization:
       # 序列化时忽略为null的属性
       fail-on-empty-beans: false
+    # 确保中文正确编码
+    default-property-inclusion: non_null
+    property-naming-strategy: LOWER_CAMEL_CASE
+    deserialization:
+      fail-on-unknown-properties: false
+    parser:
+      allow-unquoted-control-chars: true
   servlet:
     multipart:
       enabled: true
@@ -56,7 +63,7 @@ springdoc:
 
 server:
   # 服务端口
-  port: 8080
+  port: 9090
   servlet:
     # 应用上下文路径
     context-path: /
