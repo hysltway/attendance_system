@@ -130,3 +130,6 @@ app:
     api-base-url: https://unpkg.com/holiday-calendar/data
     # 默认地区（中国）
     default-region: CN
+
+blockchain:
+  difficulty: 1
