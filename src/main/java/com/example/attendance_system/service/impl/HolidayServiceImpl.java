@@ -27,28 +27,28 @@ public class HolidayServiceImpl implements HolidayService {
 
     @Autowired
     private HolidayRepository holidayRepository;
-    
+
     @Autowired
     private RestTemplate restTemplate;
-    
+
     @Value("${app.holiday.api-base-url:https://unpkg.com/holiday-calendar/data}")
     private String apiBaseUrl;
-    
+
     @Value("${app.holiday.default-region:CN}")
     private String defaultRegion;
-    
+
     @Override
     public boolean isWorkday(LocalDate date) {
         // 首先检查是否为法定节假日
         if (isPublicHoliday(date)) {
             return false; // 法定节假日不是工作日
         }
-        
+
         // 检查是否为调休工作日
         if (isTransferWorkday(date)) {
             return true; // 调休工作日是工作日
         }
-        
+
         // 非节假日和调休工作日，则周一至周五是工作日
         DayOfWeek dayOfWeek = date.getDayOfWeek();
         return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY;
@@ -59,13 +59,13 @@ public class HolidayServiceImpl implements HolidayService {
     public int syncHolidaysFromAPI(int year) {
         String url = String.format("%s/%s/%d.json", apiBaseUrl, defaultRegion, year);
         log.info("开始从API同步{}年节假日数据，URL: {}", year, url);
-        
+
         try {
             // 调用外部API
             String jsonResponse = restTemplate.getForObject(url, String.class);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(jsonResponse);
-            
+
             int count = 0;
             JsonNode datesNode = rootNode.get("dates");
             if (datesNode != null && datesNode.isArray()) {
@@ -75,13 +75,13 @@ public class HolidayServiceImpl implements HolidayService {
                     String nameCN = dateNode.get("name_cn").asText();
                     String nameEN = dateNode.get("name_en").asText();
                     String type = dateNode.get("type").asText();
-                    
+
                     // 转换日期格式
                     LocalDate holidayDate = LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE);
-                    
+
                     // 查找是否已存在该日期的记录
                     Optional<Holiday> existingHoliday = holidayRepository.findByHolidayDate(holidayDate);
-                    
+
                     if (existingHoliday.isPresent()) {
                         // 更新已有记录
                         Holiday holiday = existingHoliday.get();

@@ -6,8 +6,6 @@ import com.example.attendance_system.service.DepartmentService;
 import com.example.attendance_system.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,9 +35,10 @@ public class AdminDepartmentController {
 
     /**
      * 分页查询部门列表
+     *
      * @param current 当前页码（从1开始）
-     * @param size 每页条数
-     * @param name 部门名称（模糊匹配，可选）
+     * @param size    每页条数
+     * @param name    部门名称（模糊匹配，可选）
      * @return 部门列表分页结果
      */
     @Operation(summary = "分页查询部门列表", description = "管理员查看所有部门信息，支持分页查询和名称模糊搜索")
@@ -54,13 +53,13 @@ public class AdminDepartmentController {
     public ResponseEntity<?> getDepartmentList(
             @Parameter(description = "当前页码，从1开始计数")
             @RequestParam(defaultValue = "1") Integer current,
-            
+
             @Parameter(description = "每页条数")
             @RequestParam(defaultValue = "10") Integer size,
-            
+
             @Parameter(description = "部门名称（支持模糊匹配）")
             @RequestParam(required = false) String name) {
-        
+
         try {
             // 参数校验
             if (current < 1) {
@@ -69,35 +68,36 @@ public class AdminDepartmentController {
             if (size < 1 || size > 100) {
                 throw new IllegalArgumentException("每页记录数必须在1-100之间");
             }
-            
+
             // 调用服务查询部门列表
             Page<Department> departmentPage = departmentService.getDepartmentListPage(current, size, name);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("total", departmentPage.getTotalElements());
             response.put("pages", departmentPage.getTotalPages());
             response.put("current", current);
             response.put("records", departmentPage.getContent());
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "获取部门列表失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 新增部门
+     *
      * @param department 部门信息
      * @return 创建结果
      */
@@ -116,36 +116,37 @@ public class AdminDepartmentController {
             if (department.getName() == null || department.getName().isEmpty()) {
                 throw new IllegalArgumentException("部门名称不能为空");
             }
-            
+
             // 清除parentId
             department.setParentId(null);
-            
+
             // 调用服务创建部门
             Department createdDepartment = departmentService.createDepartment(department);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "创建部门成功");
             response.put("department", createdDepartment);
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "创建部门失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 编辑部门信息
+     *
      * @param department 部门信息
      * @return 更新结果
      */
@@ -167,36 +168,37 @@ public class AdminDepartmentController {
             if (department.getName() == null || department.getName().isEmpty()) {
                 throw new IllegalArgumentException("部门名称不能为空");
             }
-            
+
             // 清除parentId
             department.setParentId(null);
-            
+
             // 调用服务更新部门信息
             Department updatedDepartment = departmentService.updateDepartment(department);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "更新部门信息成功");
             response.put("department", updatedDepartment);
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "更新部门信息失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 删除部门
+     *
      * @param id 部门ID
      * @return 删除结果
      */
@@ -217,40 +219,41 @@ public class AdminDepartmentController {
             if (id == null || id.isEmpty()) {
                 throw new IllegalArgumentException("部门ID不能为空");
             }
-            
+
             // 调用服务删除部门
             boolean result = departmentService.deleteDepartment(id);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", result);
-            
+
             if (result) {
                 response.put("message", "部门删除成功");
             } else {
                 response.put("message", "部门删除失败");
             }
-            
+
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "删除部门失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }
 
     /**
      * 查询指定部门的员工详情列表
+     *
      * @param departmentId 部门ID
-     * @param current 当前页码
-     * @param size 每页条数
+     * @param current      当前页码
+     * @param size         每页条数
      * @return 员工列表分页结果
      */
     @Operation(summary = "查询指定部门的员工详情列表", description = "管理员查看某一部门下的所有员工信息，支持分页展示")
@@ -265,13 +268,13 @@ public class AdminDepartmentController {
     public ResponseEntity<?> getDepartmentEmployees(
             @Parameter(description = "目标部门的唯一ID", required = true)
             @RequestParam String departmentId,
-            
+
             @Parameter(description = "当前页码，从1开始计数", required = true)
             @RequestParam(defaultValue = "1") Integer current,
-            
+
             @Parameter(description = "每页条数", required = true)
             @RequestParam(defaultValue = "10") Integer size) {
-        
+
         try {
             // 参数校验
             if (departmentId == null || departmentId.isEmpty()) {
@@ -283,47 +286,47 @@ public class AdminDepartmentController {
             if (size < 1 || size > 100) {
                 throw new IllegalArgumentException("每页记录数必须在1-100之间");
             }
-            
+
             // 检查部门是否存在
             Long deptId = Long.parseLong(departmentId);
             if (!departmentService.existsById(deptId)) {
                 throw new IllegalArgumentException("部门不存在");
             }
-            
+
             // 调用服务查询部门员工列表
             Page<Employee> employeePage = employeeService.getEmployeesByDepartmentId(deptId, current, size);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("total", employeePage.getTotalElements());
             response.put("pages", employeePage.getTotalPages());
             response.put("current", current);
             response.put("departmentId", departmentId);
-            
+
             // 获取部门信息
             Department department = departmentService.getDepartmentById(deptId);
             response.put("departmentName", department.getName());
-            
+
             response.put("records", employeePage.getContent());
-            
+
             return ResponseEntity.ok(response);
         } catch (NumberFormatException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "部门ID格式不正确");
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
-            
+
             return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "获取部门员工列表失败：" + e.getMessage());
-            
+
             return ResponseEntity.internalServerError().body(response);
         }
     }

@@ -20,22 +20,22 @@ public class EmployeeInfoUpdatePageDTO {
      * 当前页码
      */
     private Integer current;
-    
+
     /**
      * 每页记录数
      */
     private Integer size;
-    
+
     /**
      * 总记录数
      */
     private Long total;
-    
+
     /**
      * 总页数
      */
     private Integer pages;
-    
+
     /**
      * 记录列表
      */

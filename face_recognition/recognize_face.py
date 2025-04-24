@@ -61,6 +61,12 @@ try:
         print(json.dumps(result))
         sys.exit(1)
     
+    # 如果检测到多个人脸
+    if len(faces) > 1:
+        result = {"error": "检测到多个人脸，请确保图像中只有一个人脸"}
+        print(json.dumps(result))
+        sys.exit(1)
+    
     # 获取人脸特征点
     shape = predictor(img_rgb, faces[0])
     
