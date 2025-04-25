@@ -57,8 +57,26 @@ public class BlockchainServiceImpl implements BlockchainService {
      */
     @PostConstruct
     public void init() {
-        log.info("初始化区块链服务...");
-        loadBlockchain(); // 尝试从文件加载区块链数据
+        try {
+            log.info("初始化区块链服务...");
+            boolean loaded = loadBlockchain(); // 尝试从文件加载区块链数据
+            
+            if (loaded) {
+                log.info("成功从文件加载区块链数据，当前链长度: {}", blockchain.getChain().size());
+                log.info("考勤记录映射表中包含 {} 条记录", recordBlockMapping.size());
+            } else {
+                log.warn("无法从文件加载区块链数据，已创建新的区块链实例");
+                // 确保创建了新的区块链实例
+                if (blockchain == null) {
+                    blockchain = new Blockchain(difficulty);
+                }
+                saveBlockchain(); // 保存空区块链，确保文件存在
+            }
+        } catch (Exception e) {
+            log.error("初始化区块链服务失败", e);
+            // 确保创建了新的区块链实例
+            blockchain = new Blockchain(difficulty);
+        }
     }
 
     @Override
@@ -174,44 +192,157 @@ public class BlockchainServiceImpl implements BlockchainService {
      */
     private void rebuildRecordBlockMapping() {
         recordBlockMapping.clear();
+        log.info("开始重建考勤记录区块映射...");
         
+        int totalRecords = 0;
         for (Block block : blockchain.getChain()) {
             // 跳过创世区块
-            if (block.getPreviousHash() == null || block.getPreviousHash().isEmpty()) {
+            if (block.getPreviousHash() == null || block.getPreviousHash().equals("0")) {
+                log.debug("跳过创世区块，哈希值: {}", block.getHash());
                 continue;
             }
             
             // 解析区块数据
-            Object data = block.getData();
+            List<String> dataList = block.getData();
+            if (dataList == null || dataList.isEmpty()) {
+                log.debug("区块数据为空，跳过。区块哈希: {}", block.getHash());
+                continue;
+            }
+            
             try {
-                if (data instanceof List) {
-                    // 批量记录
-                    List<?> records = (List<?>) data;
-                    for (Object obj : records) {
-                        if (obj instanceof AttendanceRecordDTO) {
-                            AttendanceRecordDTO dto = (AttendanceRecordDTO) obj;
-                            if (dto.getId() != null) {
-                                recordBlockMapping.put(dto.getId(), block.getHash());
+                for (String dataStr : dataList) {
+                    if (dataStr == null || dataStr.isEmpty()) {
+                        continue;
+                    }
+                    
+                    // 尝试将JSON字符串解析为对象
+                    try {
+                        // 尝试解析为AttendanceRecordDTO列表
+                        if (dataStr.startsWith("[")) {
+                            List<?> records = objectMapper.readValue(dataStr, List.class);
+                            for (Object obj : records) {
+                                processRecordObject(obj, block.getHash());
+                                totalRecords++;
+                            }
+                        } 
+                        // 尝试解析为单个AttendanceRecordDTO
+                        else {
+                            Object record = objectMapper.readValue(dataStr, Object.class);
+                            processRecordObject(record, block.getHash());
+                            totalRecords++;
+                        }
+                    } catch (Exception e) {
+                        log.warn("解析区块数据JSON失败，尝试其他格式解析。区块哈希: {}，错误: {}", block.getHash(), e.getMessage());
+                        // 如果不是有效的JSON，尝试直接处理字符串
+                        if (dataStr.contains("id") && dataStr.contains(":")) {
+                            try {
+                                // 简单解析包含ID的字符串
+                                String idPattern = "\"id\"\\s*:\\s*(\\d+)";
+                                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(idPattern);
+                                java.util.regex.Matcher matcher = pattern.matcher(dataStr);
+                                if (matcher.find()) {
+                                    String idStr = matcher.group(1);
+                                    Long recordId = Long.valueOf(idStr);
+                                    recordBlockMapping.put(recordId, block.getHash());
+                                    log.debug("通过正则表达式提取到记录ID {} 映射到区块 {}", recordId, block.getHash());
+                                    totalRecords++;
+                                }
+                            } catch (Exception ex) {
+                                log.error("通过正则表达式提取记录ID失败，字符串: {}", dataStr, ex);
                             }
                         }
                     }
-                } else if (data instanceof AttendanceRecordDTO) {
-                    // 单条记录
-                    AttendanceRecordDTO dto = (AttendanceRecordDTO) data;
-                    if (dto.getId() != null) {
-                        recordBlockMapping.put(dto.getId(), block.getHash());
-                    }
                 }
             } catch (Exception e) {
-                log.error("解析区块数据失败", e);
+                log.error("处理区块数据失败，区块哈希: " + block.getHash(), e);
             }
         }
+        
+        log.info("考勤记录区块映射重建完成，共映射 {} 条记录", recordBlockMapping.size());
+    }
+    
+    /**
+     * 处理记录对象，提取ID并建立映射
+     * @param obj 记录对象
+     * @param blockHash 区块哈希
+     */
+    private void processRecordObject(Object obj, String blockHash) {
+        try {
+            // 处理Map类型
+            if (obj instanceof Map) {
+                Map<?, ?> map = (Map<?, ?>) obj;
+                if (map.containsKey("id")) {
+                    Object idValue = map.get("id");
+                    if (idValue != null) {
+                        Long recordId = null;
+                        if (idValue instanceof Number) {
+                            recordId = ((Number) idValue).longValue();
+                        } else {
+                            recordId = Long.valueOf(idValue.toString());
+                        }
+                        recordBlockMapping.put(recordId, blockHash);
+                        log.debug("映射记录ID {} 到区块 {}", recordId, blockHash);
+                    }
+                }
+            } 
+            // 处理AttendanceRecordDTO类型
+            else if (obj instanceof AttendanceRecordDTO) {
+                AttendanceRecordDTO dto = (AttendanceRecordDTO) obj;
+                if (dto.getId() != null) {
+                    recordBlockMapping.put(dto.getId(), blockHash);
+                    log.debug("映射记录ID {} 到区块 {}", dto.getId(), blockHash);
+                }
+            }
+            // 处理其他类型的对象，尝试使用反射获取ID字段
+            else {
+                try {
+                    // 使用反射获取id字段
+                    java.lang.reflect.Field idField = obj.getClass().getDeclaredField("id");
+                    idField.setAccessible(true);
+                    Object idValue = idField.get(obj);
+                    if (idValue != null) {
+                        Long recordId = null;
+                        if (idValue instanceof Number) {
+                            recordId = ((Number) idValue).longValue();
+                        } else {
+                            recordId = Long.valueOf(idValue.toString());
+                        }
+                        recordBlockMapping.put(recordId, blockHash);
+                        log.debug("通过反射映射记录ID {} 到区块 {}", recordId, blockHash);
+                    }
+                } catch (Exception e) {
+                    log.debug("对象不包含id字段或无法访问", e);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("处理记录对象失败: {}", e.getMessage());
+        }
+    }
+    
+    /**
+     * 根据哈希查找区块
+     * @param hash 区块哈希
+     * @return 区块
+     */
+    private Block findBlockByHash(String hash) {
+        if (hash == null || hash.isEmpty()) {
+            return null;
+        }
+        
+        for (Block block : blockchain.getChain()) {
+            if (block.getHash().equals(hash)) {
+                return block;
+            }
+        }
+        
+        return null;
     }
     
     @Override
     public int uploadHistoricalRecords(int batchSize) {
         int totalRecords = 0;
         int page = 0;
+        int skippedRecords = 0;
         
         log.info("开始上传历史考勤记录到区块链，每批次{}条", batchSize);
         
@@ -225,21 +356,29 @@ public class BlockchainServiceImpl implements BlockchainService {
             
             List<AttendanceRecordDTO> dtoList = new ArrayList<>();
             for (AttendanceRecord record : records.getContent()) {
-                // 转换为DTO
+                // 检查记录是否已经存在于区块链中
+                if (record.getId() != null && recordBlockMapping.containsKey(record.getId())) {
+                    // 记录已存在，跳过
+                    skippedRecords++;
+                    continue;
+                }
+                
+                // 转换为DTO并添加到上传列表
                 AttendanceRecordDTO dto = convertToDTO(record);
                 dtoList.add(dto);
             }
             
-            // 添加到区块链
-            addAttendanceRecords(dtoList);
+            // 如果有记录需要上传，则添加到区块链
+            if (!dtoList.isEmpty()) {
+                addAttendanceRecords(dtoList);
+                totalRecords += dtoList.size();
+                log.info("已上传{}条历史考勤记录到区块链", totalRecords);
+            }
             
-            totalRecords += dtoList.size();
             page++;
-            
-            log.info("已上传{}条历史考勤记录到区块链", totalRecords);
         }
         
-        log.info("历史考勤记录上传完成，共上传{}条记录", totalRecords);
+        log.info("历史考勤记录上传完成，共上传{}条记录，跳过{}条已存在记录", totalRecords, skippedRecords);
         return totalRecords;
     }
     
@@ -265,72 +404,205 @@ public class BlockchainServiceImpl implements BlockchainService {
     
     @Override
     public boolean verifyAttendanceRecord(AttendanceRecord record) {
-        // 如果记录未上链，返回false
-        if (record.getId() == null || !recordBlockMapping.containsKey(record.getId())) {
-            log.info("考勤记录未上链，ID: {}", record.getId());
+        if (record == null || record.getId() == null) {
+            log.warn("无法验证空记录或没有ID的记录");
             return false;
         }
         
-        // 获取记录所在的区块哈希
-        String blockHash = recordBlockMapping.get(record.getId());
+        log.debug("开始验证考勤记录是否上链, ID: {}", record.getId());
         
-        // 查找对应区块
-        Block targetBlock = null;
-        for (Block block : blockchain.getChain()) {
-            if (block.getHash().equals(blockHash)) {
-                targetBlock = block;
-                break;
-            }
-        }
-        
-        if (targetBlock == null) {
-            log.error("无法找到考勤记录对应的区块，记录ID: {}, 区块哈希: {}", record.getId(), blockHash);
-            return false;
-        }
-        
-        // 将记录转换为DTO
+        // 将实体转换为DTO
         AttendanceRecordDTO recordDTO = convertToDTO(record);
         
-        // 在区块中查找记录
-        Object blockData = targetBlock.getData();
-        if (blockData instanceof List) {
-            // 批量记录
-            List<?> records = (List<?>) blockData;
-            for (Object obj : records) {
-                if (obj instanceof AttendanceRecordDTO) {
-                    AttendanceRecordDTO dto = (AttendanceRecordDTO) obj;
-                    if (dto.getId().equals(recordDTO.getId())) {
-                        // 比较记录内容
-                        return compareRecords(dto, recordDTO);
-                    }
-                }
-            }
-        } else if (blockData instanceof AttendanceRecordDTO) {
-            // 单条记录
-            AttendanceRecordDTO dto = (AttendanceRecordDTO) blockData;
-            if (dto.getId().equals(recordDTO.getId())) {
-                // 比较记录内容
-                return compareRecords(dto, recordDTO);
-            }
+        // 检查记录ID是否在映射中
+        if (!recordBlockMapping.containsKey(record.getId())) {
+            log.debug("考勤记录 ID:{} 不在记录区块映射中，未上链", record.getId());
+            return false;
         }
         
-        log.error("在区块中未找到考勤记录，记录ID: {}", record.getId());
+        // 获取包含此记录的区块哈希
+        String blockHash = recordBlockMapping.get(record.getId());
+        if (blockHash == null || blockHash.isEmpty()) {
+            log.warn("考勤记录 ID:{} 在映射中但区块哈希为空", record.getId());
+            return false;
+        }
+        
+        // 根据哈希查找区块
+        Block block = findBlockByHash(blockHash);
+        if (block == null) {
+            log.warn("找不到哈希为 {} 的区块，记录 ID:{}", blockHash, record.getId());
+            return false;
+        }
+        
+        // 检查区块中是否包含此记录
+        try {
+            List<String> dataList = block.getData();
+            if (dataList == null || dataList.isEmpty()) {
+                log.warn("区块 {} 数据为空，记录 ID:{}", blockHash, record.getId());
+                return false;
+            }
+            
+            for (String dataStr : dataList) {
+                try {
+                    // 尝试解析为列表
+                    if (dataStr.startsWith("[")) {
+                        List<?> records = objectMapper.readValue(dataStr, List.class);
+                        for (Object obj : records) {
+                            if (isRecordMatch(obj, record.getId())) {
+                                log.debug("考勤记录 ID:{} 在区块 {} 中找到，已上链", record.getId(), blockHash);
+                                return true;
+                            }
+                        }
+                    } 
+                    // 尝试解析为单个对象
+                    else {
+                        Object obj = objectMapper.readValue(dataStr, Object.class);
+                        if (isRecordMatch(obj, record.getId())) {
+                            log.debug("考勤记录 ID:{} 在区块 {} 中找到，已上链", record.getId(), blockHash);
+                            return true;
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("解析区块数据失败: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("验证考勤记录时出错，记录ID: " + record.getId() + ", 区块哈希: " + blockHash, e);
+            return false;
+        }
+        
+        log.warn("考勤记录 ID:{} 在映射中存在，但在区块 {} 中未找到对应数据", record.getId(), blockHash);
         return false;
     }
-    
+
     /**
-     * 比较两个考勤记录是否一致
+     * 判断数据对象是否匹配指定ID
+     * @param obj 数据对象
+     * @param recordId 记录ID
+     * @return 是否匹配
      */
-    private boolean compareRecords(AttendanceRecordDTO block, AttendanceRecordDTO current) {
-        if (!block.getId().equals(current.getId())) return false;
-        if (block.getUserId() != null && current.getUserId() != null && !block.getUserId().equals(current.getUserId())) return false;
-        if (block.getCheckTime() != null && current.getCheckTime() != null && !block.getCheckTime().equals(current.getCheckTime())) return false;
-        if (block.getCheckType() != null && current.getCheckType() != null && !block.getCheckType().equals(current.getCheckType())) return false;
+    private boolean isRecordMatch(Object obj, Long recordId) {
+        if (obj == null || recordId == null) {
+            return false;
+        }
         
-        // 位置和备注可能为空
-        if (block.getLocation() != null && current.getLocation() != null && !block.getLocation().equals(current.getLocation())) return false;
-        if (block.getRemark() != null && current.getRemark() != null && !block.getRemark().equals(current.getRemark())) return false;
+        try {
+            // 处理Map类型
+            if (obj instanceof Map) {
+                Map<?, ?> map = (Map<?, ?>) obj;
+                if (map.containsKey("id") && map.get("id") != null) {
+                    Long id = null;
+                    Object idValue = map.get("id");
+                    if (idValue instanceof Number) {
+                        id = ((Number) idValue).longValue();
+                    } else {
+                        id = Long.valueOf(idValue.toString());
+                    }
+                    return recordId.equals(id);
+                }
+            } 
+            // 处理AttendanceRecordDTO类型
+            else if (obj instanceof AttendanceRecordDTO) {
+                AttendanceRecordDTO dto = (AttendanceRecordDTO) obj;
+                return dto.getId() != null && dto.getId().equals(recordId);
+            }
+            // 尝试使用反射获取id字段
+            else {
+                try {
+                    java.lang.reflect.Field idField = obj.getClass().getDeclaredField("id");
+                    idField.setAccessible(true);
+                    Object idValue = idField.get(obj);
+                    if (idValue != null) {
+                        Long id = null;
+                        if (idValue instanceof Number) {
+                            id = ((Number) idValue).longValue();
+                        } else {
+                            id = Long.valueOf(idValue.toString());
+                        }
+                        return recordId.equals(id);
+                    }
+                } catch (Exception e) {
+                    // 忽略反射异常
+                }
+            }
+        } catch (Exception e) {
+            log.debug("检查记录匹配时出错: {}", e.getMessage());
+        }
         
-        return true;
+        return false;
+    }
+
+    /**
+     * 验证考勤记录DTO是否已上链并且未被篡改
+     * @param record 考勤记录DTO
+     * @return 验证结果
+     */
+    public boolean verifyAttendanceRecordDTO(AttendanceRecordDTO record) {
+        if (record == null || record.getId() == null) {
+            log.warn("无法验证空记录或没有ID的记录");
+            return false;
+        }
+        
+        log.debug("开始验证考勤记录DTO是否上链, ID: {}", record.getId());
+        
+        // 检查记录ID是否在映射中
+        if (!recordBlockMapping.containsKey(record.getId())) {
+            log.debug("考勤记录 ID:{} 不在记录区块映射中，未上链", record.getId());
+            return false;
+        }
+        
+        // 获取包含此记录的区块哈希
+        String blockHash = recordBlockMapping.get(record.getId());
+        if (blockHash == null || blockHash.isEmpty()) {
+            log.warn("考勤记录 ID:{} 在映射中但区块哈希为空", record.getId());
+            return false;
+        }
+        
+        // 根据哈希查找区块
+        Block block = findBlockByHash(blockHash);
+        if (block == null) {
+            log.warn("找不到哈希为 {} 的区块，记录 ID:{}", blockHash, record.getId());
+            return false;
+        }
+        
+        // 检查区块中是否包含此记录
+        try {
+            List<String> dataList = block.getData();
+            if (dataList == null || dataList.isEmpty()) {
+                log.warn("区块 {} 数据为空，记录 ID:{}", blockHash, record.getId());
+                return false;
+            }
+            
+            for (String dataStr : dataList) {
+                try {
+                    // 尝试解析为列表
+                    if (dataStr.startsWith("[")) {
+                        List<?> records = objectMapper.readValue(dataStr, List.class);
+                        for (Object obj : records) {
+                            if (isRecordMatch(obj, record.getId())) {
+                                log.debug("考勤记录 ID:{} 在区块 {} 中找到，已上链", record.getId(), blockHash);
+                                return true;
+                            }
+                        }
+                    } 
+                    // 尝试解析为单个对象
+                    else {
+                        Object obj = objectMapper.readValue(dataStr, Object.class);
+                        if (isRecordMatch(obj, record.getId())) {
+                            log.debug("考勤记录 ID:{} 在区块 {} 中找到，已上链", record.getId(), blockHash);
+                            return true;
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("解析区块数据失败: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("验证考勤记录时出错，记录ID: " + record.getId() + ", 区块哈希: " + blockHash, e);
+            return false;
+        }
+        
+        log.warn("考勤记录 ID:{} 在映射中存在，但在区块 {} 中未找到对应数据", record.getId(), blockHash);
+        return false;
     }
 } 

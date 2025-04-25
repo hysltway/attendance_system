@@ -67,24 +67,29 @@ public class BlockchainInitializer {
             
             // 检查每条记录是否已上传到区块链
             List<AttendanceRecordDTO> recordsToUpload = new ArrayList<>();
+            int alreadyUploadedCount = 0;
             
             for (AttendanceRecord record : yesterdayRecords) {
-                // 检查记录是否已在区块链中
-                boolean isVerified = blockchainService.verifyAttendanceRecord(record);
-                
-                if (!isVerified) {
-                    // 转换为DTO
-                    AttendanceRecordDTO dto = convertToDTO(record);
-                    recordsToUpload.add(dto);
+                // 使用ID直接检查记录是否已经在区块链中
+                if (record.getId() != null && blockchainService.getBlockchain() != null && 
+                    blockchainService.verifyAttendanceRecord(record)) {
+                    alreadyUploadedCount++;
+                    continue;
                 }
+                
+                // 转换为DTO
+                AttendanceRecordDTO dto = convertToDTO(record);
+                recordsToUpload.add(dto);
             }
             
             if (recordsToUpload.isEmpty()) {
-                log.info("昨天({})的所有考勤记录已上传到区块链，无需重复上传", yesterdayStr);
+                log.info("昨天({})的所有{}条考勤记录已上传到区块链，无需重复上传", 
+                    yesterdayStr, alreadyUploadedCount);
                 return;
             }
             
-            log.info("昨天({})共有{}条考勤记录需要上传到区块链", yesterdayStr, recordsToUpload.size());
+            log.info("昨天({})共有{}条考勤记录需要上传到区块链，{}条记录已存在", 
+                yesterdayStr, recordsToUpload.size(), alreadyUploadedCount);
             
             // 批量上传到区块链
             if (recordsToUpload.size() <= batchSize) {
