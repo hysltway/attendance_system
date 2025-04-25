@@ -1,8 +1,3 @@
-# Copyright (C) 2018-2023
-# SPDX-License-Identifier: MIT
-
-# 人脸识别脚本 - 将输入的人脸图像与数据库中的人脸特征进行比对
-# Face recognition script - Compare input face image with features in database
 
 import os
 import sys

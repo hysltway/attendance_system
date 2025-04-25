@@ -1,8 +1,3 @@
-# Copyright (C) 2018-2023
-# SPDX-License-Identifier: MIT
-
-# 从人脸图像中提取人脸特征向量
-# Extract face feature vector from face image
 
 import os
 import sys
