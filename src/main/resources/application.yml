@@ -132,4 +132,12 @@ app:
     default-region: CN
 
 blockchain:
-  difficulty: 1
+  # 区块链挖矿难度，值越大，挖矿计算量越大，安全性越高
+  difficulty: 2
+  # 区块链数据文件路径
+  file:
+    path: blockchain.json
+  # 批量处理的记录数量
+  batch-size: 20
+  # 启用区块链功能
+  enabled: true
