@@ -136,6 +136,16 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
     }
     
     /**
+     * 实现接口方法，获取审批统计数据
+     *
+     * @return 审批统计数据
+     */
+    @Override
+    public AdminDashboardDTO.ApprovalStatisticsDTO getApprovalStatistics() {
+        return getApprovalStatisticsData();
+    }
+    
+    /**
      * 计算指定日期范围内的工时统计数据
      *
      * @param startDate 开始日期

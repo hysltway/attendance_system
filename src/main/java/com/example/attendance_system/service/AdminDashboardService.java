@@ -68,4 +68,11 @@ public interface AdminDashboardService {
      * @return 本日/本周/本月的人均出勤时长、加班时长、请假时长
      */
     Map<String, Object> getWorkingHours();
+    
+    /**
+     * 8. 获取审批统计数据
+     *
+     * @return 审批统计数据，包括待处理请假申请、考勤异常申诉、平均审批用时等
+     */
+    AdminDashboardDTO.ApprovalStatisticsDTO getApprovalStatistics();
 } 
