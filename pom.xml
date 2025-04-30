@@ -10,10 +10,11 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>attendance_system</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0</version>
     <name>attendance_system</name>
     <description>attendance_system</description>
     <url/>
+
     <licenses>
         <license/>
     </licenses>
@@ -72,6 +73,7 @@
     </dependencies>
 
     <build>
+        <finalName>attendance_system-1.0</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -96,6 +98,38 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-scripts-for-dev</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <includes>
+                                        <include>*.bat</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/python-embed</directory>
+                                    <targetPath>python-embed</targetPath>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/face_recognition</directory>
+                                    <targetPath>face_recognition</targetPath>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
